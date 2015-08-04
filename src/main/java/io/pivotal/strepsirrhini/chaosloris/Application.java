@@ -16,8 +16,20 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 /**
  * Main entry point and configuration class
@@ -32,6 +44,42 @@ public class Application {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(Application.class, args);
+        new SpringApplicationBuilder(Application.class)
+                .listeners(new OAuthEndpointApplicationListener())
+                .run(args);
     }
+
+    @Bean
+    FilterRegistrationBean brokerApiVersionFilter() {
+        FilterRegistrationBean bean = new FilterRegistrationBean();
+        bean.setFilter(new BrokerApiVersionFilter());
+        bean.addUrlPatterns("/v2/*");
+
+        return bean;
+    }
+
+    @Bean
+    ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+                .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.ANY);
+    }
+
+    @Configuration
+    @EnableOAuth2Sso
+    static class OAuthSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+        @Override
+        public void configure(HttpSecurity http) throws Exception {
+            // @formatter:off
+            http
+                .antMatcher("/dashboard/**")
+                .authorizeRequests()
+                    .anyRequest().authenticated();
+            // @formatter:on
+        }
+
+    }
+
 }

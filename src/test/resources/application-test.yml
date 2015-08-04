@@ -16,16 +16,12 @@
 security:
   oauth2:
     client:
-      clientId: chaos-loris-dashboard
-      clientSecret: ${serviceBroker.dashboardSecret}
-      scope: cloud_controller_service_permissions.read, openid
-    sso:
-      login-path: /dashboard/login
+      accessTokenUri: https://test-token-uri
+      userAuthorizationUri: https://test-authorization-uri
+    resource:
+      userInfoUri: https://test-user-info-uri
 
 ---
-security:
-  user:
-    name: ${serviceBroker.username}
-    password: ${serviceBroker.password}
 serviceBroker:
-  host: ${vcap.application.uris[0]}
+  dashboardSecret: test-dashboard-secret
+  host: 10.128.10.4

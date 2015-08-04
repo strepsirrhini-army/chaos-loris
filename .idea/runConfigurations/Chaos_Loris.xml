@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Chaos Loris" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="io.pivotal.strepsirrhini.chaosloris.Application" />
+    <option name="PROGRAM_PARAMETERS" value="--serviceBroker.dashboardSecret=test-dashboard-secret --serviceBroker.host=localhost" />
+    <module name="chaos-loris" />
+    <envs />
+    <method />
+  </configuration>
+</component>
