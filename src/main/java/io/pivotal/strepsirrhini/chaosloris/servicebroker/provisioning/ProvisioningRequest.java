@@ -20,44 +20,56 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
+import java.util.Map;
+import java.util.UUID;
+
 final class ProvisioningRequest {
 
-    private final String serviceId;
+    private final UUID organizationGuid;
 
-    private final String planId;
+    private final Map<String, ?> parameters;
 
-    private final String organizationGuid;
+    private final UUID planId;
 
-    private final String spaceGuid;
+    private final UUID serviceId;
+
+    private final UUID spaceGuid;
 
     @JsonCreator
-    ProvisioningRequest(@JsonProperty("service_id") String serviceId, @JsonProperty("plan_id") String planId,
-                        @JsonProperty("organization_guid") String organizationGuid,
-                        @JsonProperty("space_guid") String spaceGuid) {
+    ProvisioningRequest(@JsonProperty("organization_guid") UUID organizationGuid,
+                        @JsonProperty("parameters") Map<String, ?> parameters,
+                        @JsonProperty("plan_id") UUID planId,
+                        @JsonProperty("service_id") UUID serviceId,
+                        @JsonProperty("space_guid") UUID spaceGuid) {
         Assert.notNull(serviceId);
         Assert.notNull(planId);
         Assert.notNull(organizationGuid);
         Assert.notNull(spaceGuid);
 
-        this.serviceId = serviceId;
-        this.planId = planId;
         this.organizationGuid = organizationGuid;
+        this.parameters = parameters;
+        this.planId = planId;
+        this.serviceId = serviceId;
         this.spaceGuid = spaceGuid;
     }
 
-    String getServiceId() {
-        return this.serviceId;
-    }
-
-    String getPlanId() {
-        return this.planId;
-    }
-
-    String getOrganizationGuid() {
+    UUID getOrganizationGuid() {
         return this.organizationGuid;
     }
 
-    String getSpaceGuid() {
+    Map<String, ?> getParameters() {
+        return this.parameters;
+    }
+
+    UUID getPlanId() {
+        return this.planId;
+    }
+
+    UUID getServiceId() {
+        return this.serviceId;
+    }
+
+    UUID getSpaceGuid() {
         return this.spaceGuid;
     }
 

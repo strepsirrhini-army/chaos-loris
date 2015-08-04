@@ -18,6 +18,7 @@ package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,6 +29,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 final class ProvisioningController {
@@ -39,26 +41,42 @@ final class ProvisioningController {
         this.host = host;
     }
 
-    @RequestMapping(method = RequestMethod.PUT, value = "/v2/service_instances/*")
-    ProvisioningResponse create(@RequestBody ProvisioningRequest provisioningRequest) {
+    // 201 Created	Service instance has been created. The expected response body is below.
+    // 200 OK	May be returned if the service instance already exists and the requested parameters are identical to
+    // the
+    // existing service instance. The expected response body is below.
+    // 409 Conflict	Should be returned if the requested service instance already exists. The expected response body is
+    // “{}”
+    @RequestMapping(method = RequestMethod.PUT, value = "/v2/service_instances/{instanceId}")
+    ProvisioningResponse create(@PathVariable("instanceId") UUID instanceId,
+                                @RequestBody ProvisioningRequest provisioningRequest) {
         URI dashboardUri = UriComponentsBuilder.newInstance()
                 .scheme("https")
                 .host(this.host)
                 .pathSegment("dashboard")
-                .pathSegment(provisioningRequest.getOrganizationGuid())
-                .pathSegment(provisioningRequest.getSpaceGuid())
+                .pathSegment(instanceId.toString())
                 .build().toUri();
 
         return new ProvisioningResponse(dashboardUri);
     }
 
-    @RequestMapping(method = RequestMethod.PATCH, value = "/v2/service_instances/*")
-    Map<?, ?> update(@RequestBody UpdateRequest updateRequest) {
+    //  200 OK	New plan is effective. The expected response body is `{}`.
+    // 422 Unprocessable entity	May be returned if the particular plan change requested is not supported or if the
+    // request can not currently be fulfilled due to the state of the instance (eg. instance utilization is over the
+    // quota of the requested plan). Broker should include a user-facing message in the body; for details see Broker
+    // Errors.
+    @RequestMapping(method = RequestMethod.PATCH, value = "/v2/service_instances/{instanceId}")
+    Map<?, ?> update(@PathVariable("instanceId") UUID instanceId,
+                     @RequestBody UpdateRequest updateRequest) {
         return Collections.emptyMap();
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/v2/service_instances/*")
-    Map<?, ?> delete(@RequestParam("service_id") String serviceId, @RequestParam("plan_id") String planId) {
+    // 200 OK	Service instance was deleted. The expected response body is “{}”
+    // 410 Gone	Should be returned if the service instance does not exist. The expected response body is “{}”
+    @RequestMapping(method = RequestMethod.DELETE, value = "/v2/service_instances/{instanceId}")
+    Map<?, ?> delete(@PathVariable("instanceId") UUID instanceId,
+                     @RequestParam("service_id") UUID serviceId,
+                     @RequestParam("plan_id") UUID planId) {
         return Collections.emptyMap();
     }
 

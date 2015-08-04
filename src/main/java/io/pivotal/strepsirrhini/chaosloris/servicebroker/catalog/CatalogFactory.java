@@ -21,15 +21,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.groups.Default;
 import java.net.URI;
 import java.util.UUID;
 
 @Configuration
 public class CatalogFactory {
 
-    private static final UUID PLAN_ID = UUID.fromString("87E67009-218A-436E-ACBC-A387F7E08C24");
+    private static final UUID PLAN_ID = UUID.fromString("87e67009-218a-436e-acbc-a387f7e08c24");
 
-    private static final UUID SERVICE_ID = UUID.fromString("0120774A-50D9-4F26-8165-302DD4778691");
+    private static final UUID SERVICE_ID = UUID.fromString("0120774a-50d9-4f26-8165-302dd4778691");
 
     @Bean
     Catalog catalog(@Value("${serviceBroker.dashboardSecret}") String dashboardSecret,

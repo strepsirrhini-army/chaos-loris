@@ -18,8 +18,10 @@ package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
 import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractDeserializationTest;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 
@@ -31,19 +33,21 @@ public final class ProvisioningRequestTest extends AbstractDeserializationTest<P
 
     @Override
     protected void assertContents(ProvisioningRequest instance) {
-        assertEquals("test-service-id", instance.getServiceId());
-        assertEquals("test-plan-id", instance.getPlanId());
-        assertEquals("test-organization-guid", instance.getOrganizationGuid());
-        assertEquals("test-space-guid", instance.getSpaceGuid());
+        assertEquals(UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"), instance.getOrganizationGuid());
+        assertEquals(Collections.emptyMap(), instance.getParameters());
+        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), instance.getPlanId());
+        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), instance.getServiceId());
+        assertEquals(UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"), instance.getSpaceGuid());
     }
 
     @Override
     protected Map getMap() {
-        Map<String, String> m = new HashMap<>();
-        m.put("service_id", "test-service-id");
-        m.put("plan_id", "test-plan-id");
-        m.put("organization_guid", "test-organization-guid");
-        m.put("space_guid", "test-space-guid");
+        Map<String, Object> m = new HashMap<>();
+        m.put("organization_guid", UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"));
+        m.put("parameters", Collections.emptyMap());
+        m.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
+        m.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
+        m.put("space_guid", UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"));
 
         return m;
     }

@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris.servicebroker;
+package io.pivotal.strepsirrhini.chaosloris.servicebroker.binding;
 
-/**
- * A holder for the credential information
- */
-public final class Credentials {
+final class Credentials {
 }

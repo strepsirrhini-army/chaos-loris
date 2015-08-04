@@ -17,7 +17,6 @@
 package io.pivotal.strepsirrhini.chaosloris.servicebroker.binding;
 
 import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractSerializationTest;
-import io.pivotal.strepsirrhini.chaosloris.servicebroker.Credentials;
 
 import java.io.IOException;
 import java.net.URI;

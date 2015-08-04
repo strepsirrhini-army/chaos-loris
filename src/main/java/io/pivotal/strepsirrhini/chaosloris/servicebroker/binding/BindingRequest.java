@@ -20,36 +20,47 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
+import java.util.Map;
+import java.util.UUID;
+
 final class BindingRequest {
 
-    private final String serviceId;
+    private final UUID appGuid;
 
-    private final String planId;
+    private final Map<String, ?> parameters;
 
-    private final String appGuid;
+    private final UUID planId;
+
+    private final UUID serviceId;
 
     @JsonCreator
-    BindingRequest(@JsonProperty("service_id") String serviceId, @JsonProperty("plan_id") String planId,
-                   @JsonProperty("app_guid") String appGuid) {
+    BindingRequest(@JsonProperty("app_guid") UUID appGuid,
+                   @JsonProperty("parameters") Map<String, ?> parameters,
+                   @JsonProperty("plan_id") UUID planId,
+                   @JsonProperty("service_id") UUID serviceId) {
         Assert.notNull(serviceId);
         Assert.notNull(planId);
-        Assert.notNull(appGuid);
 
-        this.serviceId = serviceId;
-        this.planId = planId;
         this.appGuid = appGuid;
+        this.parameters = parameters;
+        this.planId = planId;
+        this.serviceId = serviceId;
     }
 
-    String getServiceId() {
-        return this.serviceId;
+    UUID getAppGuid() {
+        return this.appGuid;
     }
 
-    String getPlanId() {
+    Map<String, ?> getParameters() {
+        return this.parameters;
+    }
+
+    UUID getPlanId() {
         return this.planId;
     }
 
-    String getAppGuid() {
-        return this.appGuid;
+    UUID getServiceId() {
+        return this.serviceId;
     }
 
 }

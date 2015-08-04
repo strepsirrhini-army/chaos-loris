@@ -18,10 +18,12 @@ package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
 import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractDeserializationTest;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public final class UpdateRequestTest extends AbstractDeserializationTest<UpdateRequest> {
 
@@ -31,13 +33,31 @@ public final class UpdateRequestTest extends AbstractDeserializationTest<UpdateR
 
     @Override
     protected void assertContents(UpdateRequest instance) {
-        assertEquals("test-plan-id", instance.getPlanId());
+        assertEquals(Collections.emptyMap(), instance.getParameters());
+        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), instance.getPlanId());
+        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), instance.getServiceId());
+
+        UpdateRequest.PreviousValues previousValues = instance.getPreviousValues();
+        assertEquals(UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"), previousValues.getOrganizationId());
+        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), previousValues.getPlanId());
+        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), previousValues.getServiceId());
+        assertEquals(UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"), previousValues.getSpaceId());
     }
 
     @Override
     protected Map getMap() {
-        Map<String, String> m = new HashMap<>();
-        m.put("plan_id", "test-plan-id");
+        Map<String, Object> m = new HashMap<>();
+        m.put("parameters", Collections.emptyMap());
+        m.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
+        m.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
+
+        Map<String, Object> previousValues = new HashMap<>();
+        previousValues.put("organization_id", UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"));
+        previousValues.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
+        previousValues.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
+        previousValues.put("space_id", UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"));
+
+        m.put("previous_values", previousValues);
 
         return m;
     }

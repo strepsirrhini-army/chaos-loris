@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris.servicebroker;
+package io.pivotal.strepsirrhini.chaosloris.servicebroker.binding;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

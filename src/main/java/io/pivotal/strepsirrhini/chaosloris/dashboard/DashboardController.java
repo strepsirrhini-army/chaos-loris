@@ -14,30 +14,21 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris.servicebroker.binding;
+package io.pivotal.strepsirrhini.chaosloris.dashboard;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.net.URI;
+import java.util.UUID;
 
-final class BindingResponse {
+@Controller
+final class DashboardController {
 
-    private final Credentials credentials;
-
-    private final URI syslogDrainUrl;
-
-    BindingResponse(Credentials credentials, URI syslogDrainUrl) {
-        this.credentials = credentials;
-        this.syslogDrainUrl = syslogDrainUrl;
-    }
-
-    Credentials getCredentials() {
-        return this.credentials;
-    }
-
-    @JsonProperty("syslog_drain_url")
-    URI getSyslogDrainUrl() {
-        return this.syslogDrainUrl;
+    @RequestMapping(method = RequestMethod.GET, value = "/dashboard/{instanceId}")
+    String dashboard(@PathVariable("instanceId") UUID instanceId) {
+        return "dashboard";
     }
 
 }

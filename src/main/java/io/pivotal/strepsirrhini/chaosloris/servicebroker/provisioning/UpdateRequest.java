@@ -20,18 +20,85 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
+import java.util.Map;
+import java.util.UUID;
+
 final class UpdateRequest {
 
-    private final String planId;
+    private final Map<String, ?> parameters;
+
+    private final UUID planId;
+
+    private final PreviousValues previousValues;
+
+    private final UUID serviceId;
 
     @JsonCreator
-    UpdateRequest(@JsonProperty("plan_id") String planId) {
-        Assert.notNull(planId);
+    UpdateRequest(@JsonProperty("parameters") Map<String, ?> parameters,
+                  @JsonProperty("plan_id") UUID planId,
+                  @JsonProperty("previous_values") PreviousValues previousValues,
+                  @JsonProperty("service_id") UUID serviceId) {
+        Assert.notNull(serviceId);
+
+        this.parameters = parameters;
         this.planId = planId;
+        this.previousValues = previousValues;
+        this.serviceId = serviceId;
     }
 
-    String getPlanId() {
+    Map<String, ?> getParameters() {
+        return this.parameters;
+    }
+
+    UUID getPlanId() {
         return this.planId;
+    }
+
+    PreviousValues getPreviousValues() {
+        return this.previousValues;
+    }
+
+    UUID getServiceId() {
+        return this.serviceId;
+    }
+
+    static final class PreviousValues {
+
+        private final UUID organizationId;
+
+        private final UUID planId;
+
+        private final UUID serviceId;
+
+        private final UUID spaceId;
+
+        @JsonCreator
+        PreviousValues(@JsonProperty("organization_id") UUID organizationId,
+                       @JsonProperty("plan_id") UUID planId,
+                       @JsonProperty("service_id") UUID serviceId,
+                       @JsonProperty("space_id") UUID spaceId) {
+            this.organizationId = organizationId;
+            this.planId = planId;
+            this.serviceId = serviceId;
+            this.spaceId = spaceId;
+        }
+
+        UUID getOrganizationId() {
+            return this.organizationId;
+        }
+
+        UUID getPlanId() {
+            return this.planId;
+        }
+
+        UUID getServiceId() {
+            return this.serviceId;
+        }
+
+        UUID getSpaceId() {
+            return this.spaceId;
+        }
+
     }
 
 }

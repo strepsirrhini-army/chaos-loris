@@ -21,8 +21,10 @@ import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractControllerTest;
 import org.junit.Test;
 import org.springframework.http.MediaType;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -34,25 +36,30 @@ public final class BindingControllerTest extends AbstractControllerTest {
 
     @Test
     public void create() throws Exception {
-        this.mockMvc.perform(put("/v2/service_instances/0/service_bindings/1").content(payload())
-                .contentType(MediaType.APPLICATION_JSON))
+        this.mockMvc.perform(
+                put("/v2/service_instances/009b82a8-81ed-4a28-9430-ce10f6442b05/service_bindings/48764271-0e55-4567-8014-df50b4ea2056")
+                        .content(payload())
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.credentials.*", hasSize(0)));
     }
 
     @Test
     public void testDelete() throws Exception {
-        this.mockMvc.perform(delete("/v2/service_instances/0/service_bindings/1")
-                .param("service_id", "test-service-id").param("plan_id", "test-plan-id"))
+        this.mockMvc.perform(
+                delete("/v2/service_instances/009b82a8-81ed-4a28-9430-ce10f6442b05/service_bindings/48764271-0e55-4567-8014-df50b4ea2056")
+                        .param("plan_id", "03e17851-de4d-435c-beb2-6eb92a8c941d")
+                        .param("service_id", "f6fe01b7-1e27-4857-961f-8451b1248ad1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").exists());
     }
 
     private String payload() throws JsonProcessingException {
-        Map<String, String> m = new HashMap<>();
-        m.put("service_id", "test-service-id");
-        m.put("plan_id", "test-plan-id");
-        m.put("app_guid", "test-app-guid");
+        Map<String, Object> m = new HashMap<>();
+        m.put("app_guid", UUID.fromString("9c0963b6-bbb2-4f04-b389-708eca7a3a54"));
+        m.put("parameters", Collections.emptyMap());
+        m.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
+        m.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
 
         return this.objectMapper.writeValueAsString(m);
     }
