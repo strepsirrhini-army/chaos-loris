@@ -1,0 +1,7 @@
+---
+applications:
+- name: chaos-loris
+  memory: 512M
+  instances: 1
+  path: target/chaos-loris.jar
+  buildpack: https://github.com/cloudfoundry/java-buildpack.git
