@@ -16,6 +16,7 @@
 
 package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
+import io.pivotal.strepsirrhini.chaosloris.TestIds;
 import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractDeserializationTest;
 
 import java.util.Collections;
@@ -23,6 +24,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.ORGANIZATION_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.PLAN_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.SERVICE_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.SPACE_ID;
 import static org.junit.Assert.assertEquals;
 
 public final class UpdateRequestTest extends AbstractDeserializationTest<UpdateRequest> {
@@ -34,28 +39,28 @@ public final class UpdateRequestTest extends AbstractDeserializationTest<UpdateR
     @Override
     protected void assertContents(UpdateRequest instance) {
         assertEquals(Collections.emptyMap(), instance.getParameters());
-        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), instance.getPlanId());
-        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), instance.getServiceId());
+        assertEquals(PLAN_ID, instance.getPlanId());
+        assertEquals(SERVICE_ID, instance.getServiceId());
 
         UpdateRequest.PreviousValues previousValues = instance.getPreviousValues();
-        assertEquals(UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"), previousValues.getOrganizationId());
-        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), previousValues.getPlanId());
-        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), previousValues.getServiceId());
-        assertEquals(UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"), previousValues.getSpaceId());
+        assertEquals(ORGANIZATION_ID, previousValues.getOrganizationId());
+        assertEquals(PLAN_ID, previousValues.getPlanId());
+        assertEquals(SERVICE_ID, previousValues.getServiceId());
+        assertEquals(SPACE_ID, previousValues.getSpaceId());
     }
 
     @Override
     protected Map getMap() {
         Map<String, Object> m = new HashMap<>();
         m.put("parameters", Collections.emptyMap());
-        m.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
-        m.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
+        m.put("plan_id", PLAN_ID);
+        m.put("service_id", SERVICE_ID);
 
         Map<String, Object> previousValues = new HashMap<>();
-        previousValues.put("organization_id", UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"));
-        previousValues.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
-        previousValues.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
-        previousValues.put("space_id", UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"));
+        previousValues.put("organization_id", ORGANIZATION_ID);
+        previousValues.put("plan_id", PLAN_ID);
+        previousValues.put("service_id", SERVICE_ID);
+        previousValues.put("space_id", SPACE_ID);
 
         m.put("previous_values", previousValues);
 

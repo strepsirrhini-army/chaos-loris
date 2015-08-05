@@ -25,7 +25,7 @@ import java.util.UUID;
 
 final class UpdateRequest {
 
-    private final Map<String, ?> parameters;
+    private final Map<String, String> parameters;
 
     private final UUID planId;
 
@@ -34,7 +34,7 @@ final class UpdateRequest {
     private final UUID serviceId;
 
     @JsonCreator
-    UpdateRequest(@JsonProperty("parameters") Map<String, ?> parameters,
+    UpdateRequest(@JsonProperty("parameters") Map<String, String> parameters,
                   @JsonProperty("plan_id") UUID planId,
                   @JsonProperty("previous_values") PreviousValues previousValues,
                   @JsonProperty("service_id") UUID serviceId) {
@@ -46,7 +46,7 @@ final class UpdateRequest {
         this.serviceId = serviceId;
     }
 
-    Map<String, ?> getParameters() {
+    Map<String, String> getParameters() {
         return this.parameters;
     }
 

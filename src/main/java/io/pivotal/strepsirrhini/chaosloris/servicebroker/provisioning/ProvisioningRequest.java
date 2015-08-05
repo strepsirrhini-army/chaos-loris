@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ final class ProvisioningRequest {
 
     private final UUID organizationGuid;
 
-    private final Map<String, ?> parameters;
+    private final Map<String, String> parameters;
 
     private final UUID planId;
 
@@ -37,17 +38,17 @@ final class ProvisioningRequest {
 
     @JsonCreator
     ProvisioningRequest(@JsonProperty("organization_guid") UUID organizationGuid,
-                        @JsonProperty("parameters") Map<String, ?> parameters,
+                        @JsonProperty("parameters") Map<String, String> parameters,
                         @JsonProperty("plan_id") UUID planId,
                         @JsonProperty("service_id") UUID serviceId,
                         @JsonProperty("space_guid") UUID spaceGuid) {
-        Assert.notNull(serviceId);
-        Assert.notNull(planId);
         Assert.notNull(organizationGuid);
+        Assert.notNull(planId);
+        Assert.notNull(serviceId);
         Assert.notNull(spaceGuid);
 
         this.organizationGuid = organizationGuid;
-        this.parameters = parameters;
+        this.parameters = parameters == null ? Collections.emptyMap() : parameters;
         this.planId = planId;
         this.serviceId = serviceId;
         this.spaceGuid = spaceGuid;
@@ -57,7 +58,7 @@ final class ProvisioningRequest {
         return this.organizationGuid;
     }
 
-    Map<String, ?> getParameters() {
+    Map<String, String> getParameters() {
         return this.parameters;
     }
 

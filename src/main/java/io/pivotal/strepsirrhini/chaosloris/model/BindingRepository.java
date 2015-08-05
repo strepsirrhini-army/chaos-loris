@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
+package io.pivotal.strepsirrhini.chaosloris.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.net.URI;
+import java.util.UUID;
 
-final class ProvisioningResponse {
-
-    private final URI dashboardUrl;
-
-    ProvisioningResponse() {
-        this(null);
-    }
-
-    ProvisioningResponse(URI dashboardUrl) {
-        this.dashboardUrl = dashboardUrl;
-    }
-
-    @JsonProperty("dashboard_url")
-    public URI getDashboardUrl() {
-        return dashboardUrl;
-    }
+/**
+ * Repository for working with {@link Binding}s
+ */
+public interface BindingRepository extends JpaRepository<Binding, UUID> {
 
 }

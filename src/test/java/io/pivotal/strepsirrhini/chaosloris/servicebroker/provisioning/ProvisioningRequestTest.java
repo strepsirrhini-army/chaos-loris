@@ -21,8 +21,11 @@ import io.pivotal.strepsirrhini.chaosloris.servicebroker.AbstractDeserialization
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.ORGANIZATION_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.PLAN_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.SERVICE_ID;
+import static io.pivotal.strepsirrhini.chaosloris.TestIds.SPACE_ID;
 import static org.junit.Assert.assertEquals;
 
 public final class ProvisioningRequestTest extends AbstractDeserializationTest<ProvisioningRequest> {
@@ -33,21 +36,21 @@ public final class ProvisioningRequestTest extends AbstractDeserializationTest<P
 
     @Override
     protected void assertContents(ProvisioningRequest instance) {
-        assertEquals(UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"), instance.getOrganizationGuid());
+        assertEquals(ORGANIZATION_ID, instance.getOrganizationGuid());
         assertEquals(Collections.emptyMap(), instance.getParameters());
-        assertEquals(UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"), instance.getPlanId());
-        assertEquals(UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"), instance.getServiceId());
-        assertEquals(UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"), instance.getSpaceGuid());
+        assertEquals(PLAN_ID, instance.getPlanId());
+        assertEquals(SERVICE_ID, instance.getServiceId());
+        assertEquals(SPACE_ID, instance.getSpaceGuid());
     }
 
     @Override
     protected Map getMap() {
         Map<String, Object> m = new HashMap<>();
-        m.put("organization_guid", UUID.fromString("356f58e5-0abe-4674-972e-d156d2065a9b"));
+        m.put("organization_guid", ORGANIZATION_ID);
         m.put("parameters", Collections.emptyMap());
-        m.put("plan_id", UUID.fromString("03e17851-de4d-435c-beb2-6eb92a8c941d"));
-        m.put("service_id", UUID.fromString("f6fe01b7-1e27-4857-961f-8451b1248ad1"));
-        m.put("space_guid", UUID.fromString("a65bc9e3-edd6-472b-85df-3cc68d6d8705"));
+        m.put("plan_id", PLAN_ID);
+        m.put("service_id", SERVICE_ID);
+        m.put("space_guid", SPACE_ID);
 
         return m;
     }

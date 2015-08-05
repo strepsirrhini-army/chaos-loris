@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -27,7 +28,7 @@ final class BindingRequest {
 
     private final UUID appGuid;
 
-    private final Map<String, ?> parameters;
+    private final Map<String, String> parameters;
 
     private final UUID planId;
 
@@ -35,14 +36,14 @@ final class BindingRequest {
 
     @JsonCreator
     BindingRequest(@JsonProperty("app_guid") UUID appGuid,
-                   @JsonProperty("parameters") Map<String, ?> parameters,
+                   @JsonProperty("parameters") Map<String, String> parameters,
                    @JsonProperty("plan_id") UUID planId,
                    @JsonProperty("service_id") UUID serviceId) {
         Assert.notNull(serviceId);
         Assert.notNull(planId);
 
         this.appGuid = appGuid;
-        this.parameters = parameters;
+        this.parameters = parameters == null ? Collections.emptyMap() : parameters;
         this.planId = planId;
         this.serviceId = serviceId;
     }
@@ -51,7 +52,7 @@ final class BindingRequest {
         return this.appGuid;
     }
 
-    Map<String, ?> getParameters() {
+    Map<String, String> getParameters() {
         return this.parameters;
     }
 

@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public final class CatalogControllerTest extends AbstractControllerTest {
+public class CatalogControllerTest extends AbstractControllerTest {
 
     @Test
     public void catalog() throws Exception {

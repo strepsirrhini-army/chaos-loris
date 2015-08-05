@@ -16,8 +16,11 @@
 
 package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
+import io.pivotal.strepsirrhini.chaosloris.model.Instance;
+import io.pivotal.strepsirrhini.chaosloris.model.InstanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,58 +29,80 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.GONE;
+import static org.springframework.http.HttpStatus.OK;
 
 @RestController
 final class ProvisioningController {
 
     private final String host;
 
+    private final InstanceRepository instanceRepository;
+
     @Autowired
-    ProvisioningController(@Value("${serviceBroker.host}") String host) {
+    ProvisioningController(@Value("${serviceBroker.host}") String host, InstanceRepository instanceRepository) {
         this.host = host;
+        this.instanceRepository = instanceRepository;
     }
 
-    // 201 Created	Service instance has been created. The expected response body is below.
-    // 200 OK	May be returned if the service instance already exists and the requested parameters are identical to
-    // the
-    // existing service instance. The expected response body is below.
-    // 409 Conflict	Should be returned if the requested service instance already exists. The expected response body is
-    // “{}”
+    @Transactional
     @RequestMapping(method = RequestMethod.PUT, value = "/v2/service_instances/{instanceId}")
-    ProvisioningResponse create(@PathVariable("instanceId") UUID instanceId,
-                                @RequestBody ProvisioningRequest provisioningRequest) {
-        URI dashboardUri = UriComponentsBuilder.newInstance()
-                .scheme("https")
-                .host(this.host)
-                .pathSegment("dashboard")
-                .pathSegment(instanceId.toString())
-                .build().toUri();
+    ResponseEntity<ProvisioningResponse> create(@PathVariable("instanceId") UUID instanceId,
+                                                @RequestBody ProvisioningRequest provisioningRequest) {
+        Instance newInstance = new Instance(instanceId, provisioningRequest.getOrganizationGuid(),
+                provisioningRequest.getParameters(), provisioningRequest.getPlanId(), provisioningRequest
+                .getServiceId(), provisioningRequest.getSpaceGuid());
 
-        return new ProvisioningResponse(dashboardUri);
+        Instance previousInstance = this.instanceRepository.findOne(instanceId);
+        if (previousInstance == null) {
+            this.instanceRepository.save(newInstance);
+
+            ProvisioningResponse provisioningResponse = new ProvisioningResponse(getDashboardUri(instanceId));
+            return new ResponseEntity<>(provisioningResponse, CREATED);
+        } else if (newInstance.equals(previousInstance)) {
+            ProvisioningResponse provisioningResponse = new ProvisioningResponse(getDashboardUri(instanceId));
+            return new ResponseEntity<>(provisioningResponse, OK);
+        } else {
+            ProvisioningResponse provisioningResponse = new ProvisioningResponse();
+            return new ResponseEntity<>(provisioningResponse, CONFLICT);
+        }
     }
 
-    //  200 OK	New plan is effective. The expected response body is `{}`.
-    // 422 Unprocessable entity	May be returned if the particular plan change requested is not supported or if the
-    // request can not currently be fulfilled due to the state of the instance (eg. instance utilization is over the
-    // quota of the requested plan). Broker should include a user-facing message in the body; for details see Broker
-    // Errors.
+    @Transactional
     @RequestMapping(method = RequestMethod.PATCH, value = "/v2/service_instances/{instanceId}")
     Map<?, ?> update(@PathVariable("instanceId") UUID instanceId,
                      @RequestBody UpdateRequest updateRequest) {
         return Collections.emptyMap();
     }
 
-    // 200 OK	Service instance was deleted. The expected response body is “{}”
-    // 410 Gone	Should be returned if the service instance does not exist. The expected response body is “{}”
+    @Transactional
     @RequestMapping(method = RequestMethod.DELETE, value = "/v2/service_instances/{instanceId}")
-    Map<?, ?> delete(@PathVariable("instanceId") UUID instanceId,
-                     @RequestParam("service_id") UUID serviceId,
-                     @RequestParam("plan_id") UUID planId) {
-        return Collections.emptyMap();
+    ResponseEntity<Map<?, ?>> delete(@PathVariable("instanceId") UUID instanceId,
+                                     @RequestParam("service_id") UUID serviceId,
+                                     @RequestParam("plan_id") UUID planId) {
+        if (this.instanceRepository.exists(instanceId)) {
+            this.instanceRepository.delete(instanceId);
+            return new ResponseEntity<>(Collections.emptyMap(), OK);
+        } else {
+            return new ResponseEntity<>(Collections.emptyMap(), GONE);
+        }
+    }
+
+    private URI getDashboardUri(UUID instanceId) {
+        return UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host(this.host)
+                .pathSegment("dashboard")
+                .pathSegment(instanceId.toString())
+                .build().toUri();
     }
 
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="H2 - Chaos Loris" uuid="ac4c09c7-e3e7-4d2b-a751-36f836a94036">
+      <secret-storage>master_key</secret-storage>
+      <schema-pattern>CHAOS-LORIS.PUBLIC</schema-pattern>
+      <default-schemas>CHAOS-LORIS.PUBLIC</default-schemas>
+    </data-source>
+  </component>
+</project>

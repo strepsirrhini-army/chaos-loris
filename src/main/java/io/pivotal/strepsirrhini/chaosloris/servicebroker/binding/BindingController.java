@@ -16,8 +16,12 @@
 
 package io.pivotal.strepsirrhini.chaosloris.servicebroker.binding;
 
+import io.pivotal.strepsirrhini.chaosloris.model.Binding;
+import io.pivotal.strepsirrhini.chaosloris.model.BindingRepository;
+import io.pivotal.strepsirrhini.chaosloris.model.Instance;
+import io.pivotal.strepsirrhini.chaosloris.model.InstanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.Errors;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,38 +29,73 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.transaction.Transactional;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
+import static io.pivotal.strepsirrhini.chaosloris.servicebroker.Errors.REQUIRES_APPLICATION;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.GONE;
+import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
+
 @RestController
 final class BindingController {
+
+    private final BindingRepository bindingRepository;
+
+    private final InstanceRepository instanceRepository;
 
     private final Credentials credentials;
 
     @Autowired
-    BindingController(Credentials credentials) {
+    BindingController(BindingRepository bindingRepository, InstanceRepository instanceRepository,
+                      Credentials credentials) {
+        this.bindingRepository = bindingRepository;
+        this.instanceRepository = instanceRepository;
         this.credentials = credentials;
     }
 
-    // 201 Created	Binding has been created. The expected response body is below.
-    // 200 OK	May be returned if the binding already exists and the requested parameters are identical to the existing binding. The expected response body is below.
-    // 409 Conflict	Should be returned if the requested binding already exists. The expected response body is `{}`, though the description field can be used to return a user-facing error message, as described in Broker Errors.
-    // 422 Unprocessable Entity	Should be returned if the broker requires that app_guid be included in the request body. The expected response body is: { "error": "RequiresApp", "description": "This service supports generation of credentials through binding an application only." }
+    @Transactional
     @RequestMapping(method = RequestMethod.PUT,
             value = "/v2/service_instances/{instanceId}/service_bindings/{bindingId}")
-    BindingResponse create(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
-                           @RequestBody BindingRequest bindingRequest) {
-        return new BindingResponse(this.credentials, null);
+    ResponseEntity<?> create(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
+                             @RequestBody BindingRequest bindingRequest) {
+        Instance instance = this.instanceRepository.getOne(instanceId);
+
+        Binding newBinding = new Binding(bindingId, instance, bindingRequest.getAppGuid(),
+                bindingRequest.getParameters(), bindingRequest.getPlanId(), bindingRequest.getServiceId());
+
+        Binding previousBinding = this.bindingRepository.findOne(bindingId);
+        if (newBinding.getApplicationId() == null) {
+            return new ResponseEntity<>(REQUIRES_APPLICATION, UNPROCESSABLE_ENTITY);
+        } else if (previousBinding == null) {
+            this.bindingRepository.save(newBinding);
+
+            BindingResponse bindingResponse = new BindingResponse(this.credentials);
+            return new ResponseEntity<>(bindingResponse, CREATED);
+        } else if (newBinding.equals(previousBinding)) {
+            BindingResponse bindingResponse = new BindingResponse(this.credentials);
+            return new ResponseEntity<>(bindingResponse, OK);
+        } else {
+            BindingResponse bindingResponse = new BindingResponse();
+            return new ResponseEntity<>(bindingResponse, CONFLICT);
+        }
     }
 
-    // 200 OK	Binding was deleted. The expected response body is `{}`
-    // 410 Gone	Should be returned if the binding does not exist. The expected response body is `{}`
+    @Transactional
     @RequestMapping(method = RequestMethod.DELETE,
             value = "/v2/service_instances/{instanceId}/service_bindings/{bindingId}")
-    Map<?, ?> delete(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
-                     @RequestParam("service_id") UUID serviceId, @RequestParam("plan_id") UUID planId) {
-        return Collections.emptyMap();
+    ResponseEntity<Map<?, ?>> delete(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
+                                     @RequestParam("service_id") UUID serviceId, @RequestParam("plan_id") UUID planId) {
+        if (this.bindingRepository.exists(bindingId)) {
+            this.bindingRepository.delete(bindingId);
+            return new ResponseEntity<>(Collections.emptyMap(), OK);
+        } else {
+            return new ResponseEntity<>(Collections.emptyMap(), GONE);
+        }
     }
 
 }

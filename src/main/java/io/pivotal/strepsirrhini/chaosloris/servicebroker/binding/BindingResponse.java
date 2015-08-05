@@ -26,6 +26,18 @@ final class BindingResponse {
 
     private final URI syslogDrainUrl;
 
+    BindingResponse() {
+        this(null, null);
+    }
+
+    BindingResponse(Credentials credentials) {
+        this(credentials, null);
+    }
+
+    BindingResponse(URI syslogDrainUrl) {
+        this(null, syslogDrainUrl);
+    }
+
     BindingResponse(Credentials credentials, URI syslogDrainUrl) {
         this.credentials = credentials;
         this.syslogDrainUrl = syslogDrainUrl;
