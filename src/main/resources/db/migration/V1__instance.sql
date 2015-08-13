@@ -15,18 +15,16 @@
 CREATE TABLE instance (
   id              BINARY(16) NOT NULL,
   organization_id BINARY(16) NOT NULL,
-  plan_id         BINARY(16) NOT NULL,
-  service_id      BINARY(16) NOT NULL,
   space_id        BINARY(16) NOT NULL,
 
   PRIMARY KEY (id)
 );
 
 CREATE TABLE instance_parameter (
-  instance BINARY(16)   NOT NULL,
-  `key`    VARCHAR(256) NOT NULL,
-  value    VARCHAR(256) NOT NULL,
+  instance_id BINARY(16)   NOT NULL,
+  `key`       VARCHAR(256) NOT NULL,
+  value       VARCHAR(256) NOT NULL,
 
-  FOREIGN KEY (instance) REFERENCES instance (id)
+  FOREIGN KEY (instance_id) REFERENCES instance (id)
     ON DELETE CASCADE
 );

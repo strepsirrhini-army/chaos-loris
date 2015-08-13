@@ -21,11 +21,16 @@ security:
       scope: cloud_controller_service_permissions.read, openid
     sso:
       login-path: /dashboard/login
-
----
-security:
   user:
     name: ${serviceBroker.username}
     password: ${serviceBroker.password}
+
+---
+server:
+  tomcat:
+    protocol_header: x-forwarded-proto
+    remote_ip_header: x-forwarded-for
+
+---
 serviceBroker:
   host: ${vcap.application.uris[0]}

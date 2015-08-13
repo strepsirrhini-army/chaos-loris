@@ -2,3 +2,4 @@
 .idea/tasks.xml
 .idea/workspace.xml
 target
+truststore.jks

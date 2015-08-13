@@ -20,6 +20,8 @@ import io.pivotal.strepsirrhini.chaosloris.model.Binding;
 import io.pivotal.strepsirrhini.chaosloris.model.BindingRepository;
 import io.pivotal.strepsirrhini.chaosloris.model.Instance;
 import io.pivotal.strepsirrhini.chaosloris.model.InstanceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,6 +46,8 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 @RestController
 final class BindingController {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final BindingRepository bindingRepository;
 
     private final InstanceRepository instanceRepository;
@@ -63,10 +67,12 @@ final class BindingController {
             value = "/v2/service_instances/{instanceId}/service_bindings/{bindingId}")
     ResponseEntity<?> create(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
                              @RequestBody BindingRequest bindingRequest) {
+        this.logger.info("Binding {} to {}", instanceId, bindingId);
+
         Instance instance = this.instanceRepository.getOne(instanceId);
 
         Binding newBinding = new Binding(bindingId, instance, bindingRequest.getAppGuid(),
-                bindingRequest.getParameters(), bindingRequest.getPlanId(), bindingRequest.getServiceId());
+                bindingRequest.getParameters());
 
         Binding previousBinding = this.bindingRepository.findOne(bindingId);
         if (newBinding.getApplicationId() == null) {
@@ -90,6 +96,8 @@ final class BindingController {
             value = "/v2/service_instances/{instanceId}/service_bindings/{bindingId}")
     ResponseEntity<Map<?, ?>> delete(@PathVariable UUID instanceId, @PathVariable UUID bindingId,
                                      @RequestParam("service_id") UUID serviceId, @RequestParam("plan_id") UUID planId) {
+        this.logger.info("Unbinding {} from {}", instanceId, bindingId);
+
         if (this.bindingRepository.exists(bindingId)) {
             this.bindingRepository.delete(bindingId);
             return new ResponseEntity<>(Collections.emptyMap(), OK);

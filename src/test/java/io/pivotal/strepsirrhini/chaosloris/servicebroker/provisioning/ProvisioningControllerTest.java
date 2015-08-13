@@ -62,8 +62,8 @@ public class ProvisioningControllerTest extends AbstractControllerTest {
 
     @Test
     public void createAlreadyExistsNoConflict() throws Exception {
-        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(), PLAN_ID,
-                SERVICE_ID, SPACE_ID));
+        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(),
+                SPACE_ID));
 
         this.mockMvc.perform(
                 put("/v2/service_instances/" + INSTANCE_ID)
@@ -78,8 +78,8 @@ public class ProvisioningControllerTest extends AbstractControllerTest {
 
     @Test
     public void createAlreadyExistsConflict() throws Exception {
-        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(), PLAN_ID,
-                SERVICE_ID, SPACE_ID));
+        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(),
+                SPACE_ID));
 
         this.mockMvc.perform(
                 put("/v2/service_instances/" + INSTANCE_ID)
@@ -101,8 +101,8 @@ public class ProvisioningControllerTest extends AbstractControllerTest {
 
     @Test
     public void testDelete() throws Exception {
-        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(), PLAN_ID,
-                SERVICE_ID, SPACE_ID));
+        this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID, Collections.emptyMap(),
+                SPACE_ID));
 
         this.mockMvc.perform(
                 delete("/v2/service_instances/" + INSTANCE_ID)

@@ -18,6 +18,8 @@ package io.pivotal.strepsirrhini.chaosloris.servicebroker.provisioning;
 
 import io.pivotal.strepsirrhini.chaosloris.model.Instance;
 import io.pivotal.strepsirrhini.chaosloris.model.InstanceRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +45,8 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 final class ProvisioningController {
 
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final String host;
 
     private final InstanceRepository instanceRepository;
@@ -55,11 +59,12 @@ final class ProvisioningController {
 
     @Transactional
     @RequestMapping(method = RequestMethod.PUT, value = "/v2/service_instances/{instanceId}")
-    ResponseEntity<ProvisioningResponse> create(@PathVariable("instanceId") UUID instanceId,
+    ResponseEntity<ProvisioningResponse> create(@PathVariable UUID instanceId,
                                                 @RequestBody ProvisioningRequest provisioningRequest) {
+        this.logger.info("Provisioning {}", instanceId);
+
         Instance newInstance = new Instance(instanceId, provisioningRequest.getOrganizationGuid(),
-                provisioningRequest.getParameters(), provisioningRequest.getPlanId(), provisioningRequest
-                .getServiceId(), provisioningRequest.getSpaceGuid());
+                provisioningRequest.getParameters(), provisioningRequest.getSpaceGuid());
 
         Instance previousInstance = this.instanceRepository.findOne(instanceId);
         if (previousInstance == null) {
@@ -78,16 +83,18 @@ final class ProvisioningController {
 
     @Transactional
     @RequestMapping(method = RequestMethod.PATCH, value = "/v2/service_instances/{instanceId}")
-    Map<?, ?> update(@PathVariable("instanceId") UUID instanceId,
-                     @RequestBody UpdateRequest updateRequest) {
+    Map<?, ?> update(@PathVariable UUID instanceId, @RequestBody UpdateRequest updateRequest) {
+        this.logger.info("Updating {}", instanceId);
         return Collections.emptyMap();
     }
 
     @Transactional
     @RequestMapping(method = RequestMethod.DELETE, value = "/v2/service_instances/{instanceId}")
-    ResponseEntity<Map<?, ?>> delete(@PathVariable("instanceId") UUID instanceId,
+    ResponseEntity<Map<?, ?>> delete(@PathVariable UUID instanceId,
                                      @RequestParam("service_id") UUID serviceId,
                                      @RequestParam("plan_id") UUID planId) {
+        this.logger.info("Deprovisioning {}", instanceId);
+
         if (this.instanceRepository.exists(instanceId)) {
             this.instanceRepository.delete(instanceId);
             return new ResponseEntity<>(Collections.emptyMap(), OK);

@@ -42,14 +42,10 @@ public final class Binding {
     private volatile UUID applicationId;
 
     @ElementCollection
-    @CollectionTable(name = "binding_parameter", joinColumns = @JoinColumn(name = "binding"))
+    @CollectionTable(name = "binding_parameter", joinColumns = @JoinColumn(name = "binding_id"))
     @MapKeyColumn(name = "key")
     @Column(name = "value")
     private volatile Map<String, String> parameters;
-
-    private volatile UUID planId;
-
-    private volatile UUID serviceId;
 
     Binding() {
     }
@@ -61,17 +57,12 @@ public final class Binding {
      * @param instance      the instance the binding is for
      * @param applicationId the application id of the binding
      * @param parameters    the parameters of the binding
-     * @param planId        the plan id of the binding
-     * @param serviceId     the service id of the binding
      */
-    public Binding(UUID id, Instance instance, UUID applicationId, Map<String, String> parameters, UUID planId,
-                   UUID serviceId) {
+    public Binding(UUID id, Instance instance, UUID applicationId, Map<String, String> parameters) {
         this.id = id;
         this.instance = instance;
         this.applicationId = applicationId;
         this.parameters = parameters;
-        this.planId = planId;
-        this.serviceId = serviceId;
     }
 
     /**
@@ -110,24 +101,6 @@ public final class Binding {
         return this.parameters;
     }
 
-    /**
-     * Returns the plan id of the binding
-     *
-     * @return the plan id of the binding
-     */
-    public UUID getPlanId() {
-        return this.planId;
-    }
-
-    /**
-     * Returns the service id of the binding
-     *
-     * @return the service id of the binding
-     */
-    public UUID getServiceId() {
-        return this.serviceId;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -138,9 +111,7 @@ public final class Binding {
         if (!id.equals(binding.id)) return false;
         if (!instance.equals(binding.instance)) return false;
         if (!applicationId.equals(binding.applicationId)) return false;
-        if (!parameters.equals(binding.parameters)) return false;
-        if (!planId.equals(binding.planId)) return false;
-        return serviceId.equals(binding.serviceId);
+        return parameters.equals(binding.parameters);
     }
 
     @Override
@@ -149,8 +120,6 @@ public final class Binding {
         result = 31 * result + instance.hashCode();
         result = 31 * result + applicationId.hashCode();
         result = 31 * result + parameters.hashCode();
-        result = 31 * result + planId.hashCode();
-        result = 31 * result + serviceId.hashCode();
         return result;
     }
 

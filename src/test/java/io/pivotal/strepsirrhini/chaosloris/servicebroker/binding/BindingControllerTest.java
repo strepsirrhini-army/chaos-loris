@@ -43,7 +43,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,7 +59,7 @@ public class BindingControllerTest extends AbstractControllerTest {
     @Before
     public void createInstance() throws Exception {
         this.instance = this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID,
-                Collections.emptyMap(), PLAN_ID, SERVICE_ID, SPACE_ID));
+                Collections.emptyMap(), SPACE_ID));
     }
 
     @Test
@@ -78,7 +77,7 @@ public class BindingControllerTest extends AbstractControllerTest {
     @Test
     public void createAlreadyExistsNoConflict() throws Exception {
         this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, APPLICATION_ID,
-                Collections.emptyMap(), PLAN_ID, SERVICE_ID));
+                Collections.emptyMap()));
 
         this.mockMvc.perform(
                 put("/v2/service_instances/" + INSTANCE_ID + "/service_bindings/" + BINDING_ID)
@@ -92,8 +91,8 @@ public class BindingControllerTest extends AbstractControllerTest {
 
     @Test
     public void createAlreadyExistsConflict() throws Exception {
-        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, APPLICATION_ID,
-                Collections.emptyMap(), PLAN_ID, SERVICE_ID));
+        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, ALTERNATE_ID,
+                Collections.emptyMap()));
 
         this.mockMvc.perform(
                 put("/v2/service_instances/" + INSTANCE_ID + "/service_bindings/" + BINDING_ID)
@@ -105,8 +104,8 @@ public class BindingControllerTest extends AbstractControllerTest {
 
     @Test
     public void createMissingApplicationId() throws Exception {
-        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, APPLICATION_ID, Collections.emptyMap(),
-                PLAN_ID, SERVICE_ID));
+        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, APPLICATION_ID,
+                Collections.emptyMap()));
 
         this.mockMvc.perform(
                 put("/v2/service_instances/" + INSTANCE_ID + "/service_bindings/" + BINDING_ID)
@@ -120,10 +119,8 @@ public class BindingControllerTest extends AbstractControllerTest {
 
     @Test
     public void testDelete() throws Exception {
-        Instance instance = this.instanceRepository.saveAndFlush(new Instance(INSTANCE_ID, ORGANIZATION_ID,
-                Collections.emptyMap(), PLAN_ID, SERVICE_ID, SPACE_ID));
-        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, instance, APPLICATION_ID, Collections.emptyMap(),
-                PLAN_ID, SERVICE_ID));
+        this.bindingRepository.saveAndFlush(new Binding(BINDING_ID, this.instance, APPLICATION_ID,
+                Collections.emptyMap()));
 
         this.mockMvc.perform(
                 delete("/v2/service_instances/" + INSTANCE_ID + "/service_bindings/" + BINDING_ID)

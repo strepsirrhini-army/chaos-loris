@@ -38,14 +38,10 @@ public final class Instance {
     private volatile UUID organizationId;
 
     @ElementCollection
-    @CollectionTable(name = "instance_parameter", joinColumns = @JoinColumn(name = "instance"))
+    @CollectionTable(name = "instance_parameter", joinColumns = @JoinColumn(name = "instance_id"))
     @MapKeyColumn(name = "key")
     @Column(name = "value")
     private volatile Map<String, String> parameters;
-
-    private volatile UUID planId;
-
-    private volatile UUID serviceId;
 
     private volatile UUID spaceId;
 
@@ -58,17 +54,12 @@ public final class Instance {
      * @param id             the id of the instance
      * @param organizationId the organization id of the instance
      * @param parameters     the parameters of the instance
-     * @param planId         the plan id of the instance
-     * @param serviceId      the service id of the instance
      * @param spaceId        the space id of the instance
      */
-    public Instance(UUID id, UUID organizationId, Map<String, String> parameters, UUID planId, UUID serviceId,
-                    UUID spaceId) {
+    public Instance(UUID id, UUID organizationId, Map<String, String> parameters, UUID spaceId) {
         this.id = id;
         this.organizationId = organizationId;
         this.parameters = parameters;
-        this.planId = planId;
-        this.serviceId = serviceId;
         this.spaceId = spaceId;
     }
 
@@ -100,24 +91,6 @@ public final class Instance {
     }
 
     /**
-     * Returns the plan id of the instance
-     *
-     * @return the plan id of the instance
-     */
-    public UUID getPlanId() {
-        return this.planId;
-    }
-
-    /**
-     * Returns the service id of the instance
-     *
-     * @return the service id of the instance
-     */
-    public UUID getServiceId() {
-        return this.serviceId;
-    }
-
-    /**
      * Returns the space id of the instance
      *
      * @return the space id of the instance
@@ -136,8 +109,6 @@ public final class Instance {
         if (!id.equals(instance.id)) return false;
         if (!organizationId.equals(instance.organizationId)) return false;
         if (!parameters.equals(instance.parameters)) return false;
-        if (!planId.equals(instance.planId)) return false;
-        if (!serviceId.equals(instance.serviceId)) return false;
         return spaceId.equals(instance.spaceId);
     }
 
@@ -146,8 +117,6 @@ public final class Instance {
         int result = id.hashCode();
         result = 31 * result + organizationId.hashCode();
         result = 31 * result + parameters.hashCode();
-        result = 31 * result + planId.hashCode();
-        result = 31 * result + serviceId.hashCode();
         result = 31 * result + spaceId.hashCode();
         return result;
     }

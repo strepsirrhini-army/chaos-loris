@@ -14,21 +14,19 @@
 
 CREATE TABLE binding (
   id             BINARY(16) NOT NULL,
-  instance       BINARY(16) NOT NULL,
+  instance_id    BINARY(16) NOT NULL,
   application_id BINARY(16) NOT NULL,
-  plan_id        BINARY(16) NOT NULL,
-  service_id     BINARY(16) NOT NULL,
 
   PRIMARY KEY (id),
-  FOREIGN KEY (instance) REFERENCES instance (id)
+  FOREIGN KEY (instance_id) REFERENCES instance (id)
     ON DELETE CASCADE
 );
 
 CREATE TABLE binding_parameter (
-  binding BINARY(16)   NOT NULL,
-  `key`   VARCHAR(256) NOT NULL,
-  value   VARCHAR(256) NOT NULL,
+  binding_id BINARY(16)   NOT NULL,
+  `key`      VARCHAR(256) NOT NULL,
+  value      VARCHAR(256) NOT NULL,
 
-  FOREIGN KEY (binding) REFERENCES binding (id)
+  FOREIGN KEY (binding_id) REFERENCES binding (id)
     ON DELETE CASCADE
 );
