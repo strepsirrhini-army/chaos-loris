@@ -1,0 +1,240 @@
+---
+title: Chaos Loris API Reference
+
+language_tabs:
+  - http
+  - shell
+
+search: true
+---
+
+# Overview
+Chaos Loris is an application that destroys instances of Cloud Foundry applications.  The destruction is governed by configuration an schedule of destruction and probability of destruction for a specific instance.
+
+## HTTP Verbs
+Chaos Loris tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP verbs.
+
+Verb     | Usage
+-------- | -----
+`GET`    | Used to retrieve a resource
+`POST`   | Used to create a new resource
+`PATCH`  | Used to update an existing resource, including partial updates
+`DELETE` | Used to delete an existing resource
+
+
+## HTTP Status Codes
+Chaos Loris tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP status codes.
+
+Status code       | Usage
+----------------- | -----
+`200 OK`          | The request completed successfully
+`201 Created`     | A new resource has been created successfully. The resource's URI is available from the response's `Location` header
+`204 No Content`  | An update to an existing resource has been applied successfully
+`400 Bad Request` | The request was malformed. The response body will include an error providing further information
+`404 Not Found`   | The requested resource did not exist
+
+## Errors
+<%= ERB.new(File.read("../target/generated-snippets/error/http-response.md")).result(binding) %>
+
+Whenever an error response (status code >= `400`) is returned, the body will contain a JSON object that describes the problem. The error object has the following structure:
+
+<%= ERB.new(File.read("../target/generated-snippets/error/response-fields.md")).result(binding) %>
+
+## Hypermedia
+Chaos Lemur Notes uses hypermedia and resources include links to other resources in their responses. Responses are in [Hypertext Application Language (HAL)](http://stateless.co/hal_specification.html format).  Links can be found beneath the `_links` key. Users of the API should not create URIs themselves, instead they should use the above-described links to navigate
+
+# Applications
+Applications are entites that encapsulate the id of a Cloud Foundry application.  Applications can be created, delete, listed, and read.
+
+## Create an Application
+<%= ERB.new(File.read("../target/generated-snippets/application-create/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-create/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-create/http-response.md")).result(binding) %>
+
+### Request Fields
+<%= ERB.new(File.read("../target/generated-snippets/application-create/request-fields.md")).result(binding) %>
+
+### Response Headers
+<%= ERB.new(File.read("../target/generated-snippets/application-create/response-headers.md")).result(binding) %>
+
+
+## Delete an Application
+<%= ERB.new(File.read("../target/generated-snippets/application-delete/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-delete/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-delete/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/application-delete/path-parameters.md")).result(binding) %>
+
+
+## List Applications
+<%= ERB.new(File.read("../target/generated-snippets/application-list/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-list/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-list/http-response.md")).result(binding) %>
+
+### Request Parameters
+<%= ERB.new(File.read("../target/generated-snippets/application-list/request-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/application-list/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/application-list/links.md")).result(binding) %>
+
+
+## Read an Application
+<%= ERB.new(File.read("../target/generated-snippets/application-read/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-read/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/application-read/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/application-read/path-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/application-read/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/application-read/links.md")).result(binding) %>
+
+
+# Chaoses
+Chaoses are entities that enacapsulate an [Application](#applications), a [Schedule](#schedules), and a probability that an instance will experience chaos on each scheduled event.  Chaoses can be created, deleted, listed, read, and updated.
+
+## Create a Chaos
+<%= ERB.new(File.read("../target/generated-snippets/chaos-create/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-create/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-create/http-response.md")).result(binding) %>
+
+### Request Fields
+<%= ERB.new(File.read("../target/generated-snippets/chaos-create/request-fields.md")).result(binding) %>
+
+### Response Headers
+<%= ERB.new(File.read("../target/generated-snippets/chaos-create/response-headers.md")).result(binding) %>
+
+
+## Delete a Chaos
+<%= ERB.new(File.read("../target/generated-snippets/chaos-delete/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-delete/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-delete/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/chaos-delete/path-parameters.md")).result(binding) %>
+
+
+## List Chaoses
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/http-response.md")).result(binding) %>
+
+### Request Parameters
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/request-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/chaos-list/links.md")).result(binding) %>
+
+
+## Read a Chaos
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/path-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/chaos-read/links.md")).result(binding) %>
+
+
+## Update a Chaos
+<%= ERB.new(File.read("../target/generated-snippets/chaos-update/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-update/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/chaos-update/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/chaos-update/path-parameters.md")).result(binding) %>
+
+### Request Fields
+<%= ERB.new(File.read("../target/generated-snippets/chaos-update/request-fields.md")).result(binding) %>
+
+
+# Index
+The index provides the main entry point into the service.  Users of the service should not need to use any URI other than this, and can access any other entity via links.
+
+<%= ERB.new(File.read("../target/generated-snippets/index/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/index/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/index/http-response.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/index/links.md")).result(binding) %>
+
+
+# Schedules
+Schedules are entities that enacapsulate a name and a [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html).  Schedules can be created, deleted, listed, read, and updated.
+
+## Create a Schedule
+<%= ERB.new(File.read("../target/generated-snippets/schedule-create/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-create/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-create/http-response.md")).result(binding) %>
+
+### Request Fields
+<%= ERB.new(File.read("../target/generated-snippets/schedule-create/request-fields.md")).result(binding) %>
+
+### Response Headers
+<%= ERB.new(File.read("../target/generated-snippets/schedule-create/response-headers.md")).result(binding) %>
+
+
+## Delete a Schedule
+<%= ERB.new(File.read("../target/generated-snippets/schedule-delete/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-delete/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-delete/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/schedule-delete/path-parameters.md")).result(binding) %>
+
+
+## List Schedules
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/http-response.md")).result(binding) %>
+
+### Request Parameters
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/request-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/schedule-list/links.md")).result(binding) %>
+
+
+## Read a Schedule
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/path-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/schedule-read/links.md")).result(binding) %>
+
+
+## Update a Schedule
+<%= ERB.new(File.read("../target/generated-snippets/schedule-update/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-update/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/schedule-update/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/schedule-update/path-parameters.md")).result(binding) %>
+
+### Request Fields
+<%= ERB.new(File.read("../target/generated-snippets/schedule-update/request-fields.md")).result(binding) %>

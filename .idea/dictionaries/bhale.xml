@@ -2,8 +2,14 @@
   <dictionary name="bhale">
     <words>
       <w>acbc</w>
+      <w>asciidoc</w>
       <w>bindable</w>
+      <w>cfapps</w>
+      <w>chaoses</w>
+      <w>chaosloris</w>
       <w>deprovisioning</w>
+      <w>firstname</w>
+      <w>lastname</w>
       <w>updateable</w>
     </words>
   </dictionary>

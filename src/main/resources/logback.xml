@@ -26,6 +26,7 @@
     <logger name="io.pivotal.strepsirrhini.chaosloris" level="${LOGGING_LEVEL:-INFO}"/>
     <logger name="org.apache" level="ERROR"/>
     <logger name="org.cloudfoundry.reconfiguration" level="INFO"/>
+    <logger name="org.flywaydb" level="INFO"/>
     <logger name="org.springframework.boot.actuate.endpoint.mvc.EndpointHandlerMapping" level="INFO"/>
     <logger name="org.springframework.boot.autoconfigure.web.WebMvcAutoConfiguration" level="INFO"/>
     <logger name="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping" level="INFO"/>

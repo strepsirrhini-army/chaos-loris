@@ -1,16 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Chaos Loris" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-    <option name="SPRING_BOOT_MAIN_CLASS" value="io.pivotal.strepsirrhini.chaosloris.Application" />
-    <option name="VM_PARAMETERS" value="-Djavax.net.ssl.trustStore=$PROJECT_DIR$/src/main/resources/META-INF/truststore.jks" />
-    <option name="PROGRAM_PARAMETERS" value="--serviceBroker.dashboardSecret=test-dashboard-secret --serviceBroker.host=localhost" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="io.pivotal.strepsirrhini.chaosloris.ChaosLemur" />
+    <option name="PROGRAM_PARAMETERS" value="--spring.profiles.active=local" />
+    <option name="ALTERNATIVE_JRE_PATH" />
     <module name="chaos-loris" />
-    <envs>
-      <env name="ERS_APIURI" value="https://api.lime.springapps.io" />
-      <env name="SERVICEBROKER_DASHBOARDSECRET" value="test-secret" />
-      <env name="SERVICEBROKER_PASSWORD" value="test-password" />
-      <env name="SERVICEBROKER_USERNAME" value="test-username" />
-    </envs>
+    <envs />
     <method />
   </configuration>
 </component>

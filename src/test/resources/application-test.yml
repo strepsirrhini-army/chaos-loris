@@ -13,15 +13,13 @@
 # limitations under the License.
 
 ---
-security:
-  oauth2:
-    client:
-      accessTokenUri: https://test-token-uri
-      userAuthorizationUri: https://test-authorization-uri
-    resource:
-      userInfoUri: https://test-user-info-uri
+spring:
+  profiles: test
 
----
-serviceBroker:
-  dashboardSecret: test-dashboard-secret
-  host: 10.128.10.4
+  main:
+    banner-mode: off
+  datasource:
+    url: jdbc:mysql://localhost/test
+    username: chaos-loris
+    password: chaos-loris
+    driver-class-name: org.mariadb.jdbc.Driver
