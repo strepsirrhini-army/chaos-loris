@@ -55,6 +55,7 @@ public class IndexDocumentation extends AbstractApiDocumentation {
                         linkWithRel("self").ignored(),
                         linkWithRel("applications").description("Link to operations on [Applications](#applications)"),
                         linkWithRel("chaoses").description("Link to operations on [Chaos](#chaoses)"),
+                        linkWithRel("events").description("Link to operations on [Events](#events)"),
                         linkWithRel("schedules").description("Link to operations on [Schedules](#schedules)")));
 
         this.mockMvc.perform(get("/").accept(HAL_JSON));

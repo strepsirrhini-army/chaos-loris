@@ -18,6 +18,7 @@ package io.pivotal.strepsirrhini.chaosloris.data;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,6 +34,7 @@ public interface ChaosRepository extends JpaRepository<Chaos, Long> {
      * @param application the {@link Application} that {@link Chaos}es are related to
      * @return a collection of {@link Chaos}es related to the {@link Application}
      */
+    @Transactional(readOnly = true)
     List<Chaos> findByApplication(Application application);
 
     /**
@@ -41,6 +43,16 @@ public interface ChaosRepository extends JpaRepository<Chaos, Long> {
      * @param schedule the {@link Schedule} that {@link Chaos}es are related to
      * @return a collection of {@link Chaos}es related to the {@link Schedule}
      */
+    @Transactional(readOnly = true)
     List<Chaos> findBySchedule(Schedule schedule);
+
+    /**
+     * Find all of the {@link Chaos}es related to a {@link Schedule}
+     *
+     * @param id the id of {@link Schedule} that {@link Chaos}es are related to
+     * @return a collection of {@link Chaos}es related to the {@link Schedule}
+     */
+    @Transactional(readOnly = true)
+    List<Chaos> findByScheduleId(Long id);
 
 }

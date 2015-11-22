@@ -33,6 +33,7 @@ public class IndexControllerTest extends AbstractControllerTest {
                 .andExpect(jsonPath("$._links.self").exists())
                 .andExpect(jsonPath("$._links.applications").exists())
                 .andExpect(jsonPath("$._links.chaoses").exists())
+                .andExpect(jsonPath("$._links.events").exists())
                 .andExpect(jsonPath("$._links.schedules").exists());
     }
 

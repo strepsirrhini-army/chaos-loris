@@ -18,11 +18,18 @@ package io.pivotal.strepsirrhini.chaosloris.web;
 
 import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
+import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
+import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.Event;
+import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,24 +37,40 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ChaosResourceAssemblerTest extends AbstractIntegrationTest {
 
     @Autowired
+    private ApplicationRepository applicationRepository;
+
+    @Autowired
+    private ChaosRepository chaosRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+    @Autowired
+    private ScheduleRepository scheduleRepository;
+
+    @Autowired
     private ChaosResourceAssembler resourceAssembler;
 
     @Test
     public void toResource() {
         Application application = new Application(UUID.randomUUID());
-        application.setId(-1L);
+        this.applicationRepository.saveAndFlush(application);
 
-        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        schedule.setId(-2L);
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        this.scheduleRepository.saveAndFlush(schedule);
 
-        Chaos chaos = new Chaos(application, 0.2, schedule);
-        chaos.setId(-3L);
+        Chaos chaos = new Chaos(application, 0.1, schedule);
+        this.chaosRepository.saveAndFlush(chaos);
+
+        Event event = new Event(chaos, Instant.now(), Collections.emptyList(), Integer.MIN_VALUE);
+        this.eventRepository.saveAndFlush(event);
 
         ChaosResourceAssembler.ChaosResource resource = this.resourceAssembler.toResource(chaos);
 
         assertThat(resource.getContent()).isSameAs(chaos);
-        assertThat(resource.getLinks()).hasSize(3);
+        assertThat(resource.getLinks()).hasSize(4);
         assertThat(resource.getLink("application")).isNotNull();
+        assertThat(resource.getLink("event")).isNotNull();
         assertThat(resource.getLink("schedule")).isNotNull();
     }
 }

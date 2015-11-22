@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris;
+package io.pivotal.strepsirrhini.chaosloris.data;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-@ActiveProfiles({"test"})
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ChaosLemur.class, TestConfiguration.class})
-@Transactional
-@WebAppConfiguration
-public abstract class AbstractIntegrationTest {
+import java.util.List;
+
+/**
+ * A repository for handling {@link Event}s
+ */
+@Repository
+public interface EventRepository extends JpaRepository<Event, Long> {
+
+    /**
+     * Find all of the {@link Event}s related to a {@link Chaos}
+     *
+     * @param chaos the {@link Chaos} that {@link Event}s are related to
+     * @return a collection of {@link Event}s related to the {@link Chaos}
+     */
+    @Transactional(readOnly = true)
+    List<Event> findByChaos(Chaos chaos);
+
 }

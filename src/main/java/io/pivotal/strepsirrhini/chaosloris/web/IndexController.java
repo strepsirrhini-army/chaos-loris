@@ -35,6 +35,7 @@ class IndexController {
         resource.add(linkTo(methodOn(IndexController.class).index()).withSelfRel());
         resource.add(linkTo(ApplicationController.class).withRel("applications"));
         resource.add(linkTo(ChaosController.class).withRel("chaoses"));
+        resource.add(linkTo(EventController.class).withRel("events"));
         resource.add(linkTo(ScheduleController.class).withRel("schedules"));
 
         return ResponseEntity.ok(resource);

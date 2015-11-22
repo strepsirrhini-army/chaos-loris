@@ -36,19 +36,38 @@
 
     <properties>
         <assertj.version>3.2.0</assertj.version>
+        <cloudfoundry-java-client.version>2.0.0.BUILD-SNAPSHOT</cloudfoundry-java-client.version>
         <evo-inflector.version>1.2.1</evo-inflector.version>
-        <lombok.version>1.16.6</lombok.version>
         <java.version>1.8</java.version>
+        <lombok.version>1.16.6</lombok.version>
+        <reactor.version>2.1.0.BUILD-SNAPSHOT</reactor.version>
         <snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
         <spring-restdocs.version>1.0.0.RELEASE</spring-restdocs.version>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- TODO: Remove once 2.1.0 has been released -->
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+            <version>${reactor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-stream</artifactId>
+            <version>${reactor.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
@@ -59,6 +78,11 @@
             <groupId>org.atteo</groupId>
             <artifactId>evo-inflector</artifactId>
             <version>${evo-inflector.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cloudfoundry</groupId>
+            <artifactId>cloudfoundry-client-spring</artifactId>
+            <version>${cloudfoundry-java-client.version}</version>
         </dependency>
         <dependency>
             <groupId>org.flywaydb</groupId>
@@ -189,5 +213,16 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>http://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>

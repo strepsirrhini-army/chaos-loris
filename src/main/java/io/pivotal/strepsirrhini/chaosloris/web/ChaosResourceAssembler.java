@@ -17,6 +17,8 @@
 package io.pivotal.strepsirrhini.chaosloris.web;
 
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
+import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ResourceAssemblerSupport;
 import org.springframework.stereotype.Component;
@@ -27,8 +29,12 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 @Component
 final class ChaosResourceAssembler extends ResourceAssemblerSupport<Chaos, ChaosResourceAssembler.ChaosResource> {
 
-    ChaosResourceAssembler() {
+    private final EventRepository eventRepository;
+
+    @Autowired
+    ChaosResourceAssembler(EventRepository eventRepository) {
         super(ChaosController.class, ChaosResource.class);
+        this.eventRepository = eventRepository;
     }
 
     @Override
@@ -37,6 +43,10 @@ final class ChaosResourceAssembler extends ResourceAssemblerSupport<Chaos, Chaos
 
         resource.add(linkTo(methodOn(ApplicationController.class).read(chaos.getApplication().getId())).withRel("application"));
         resource.add(linkTo(methodOn(ScheduleController.class).read(chaos.getSchedule().getId())).withRel("schedule"));
+
+        this.eventRepository.findByChaos(chaos).stream()
+                .map(event -> linkTo(methodOn(EventController.class).read(event.getId())).withRel("event"))
+                .forEach(resource::add);
 
         return resource;
     }

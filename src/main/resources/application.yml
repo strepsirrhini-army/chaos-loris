@@ -13,6 +13,18 @@
 # limitations under the License.
 
 ---
+security:
+  basic:
+    enabled: false
+spring:
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+loris:
+  scheduler:
+    size: 20
+
+---
 spring:
   profiles: local
 

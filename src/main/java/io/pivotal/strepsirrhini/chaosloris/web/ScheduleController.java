@@ -17,8 +17,12 @@
 package io.pivotal.strepsirrhini.chaosloris.web;
 
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleCreatedEvent;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleDeletedEvent;
 import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleUpdatedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
@@ -44,12 +48,15 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 @RequestMapping("/schedules")
 public class ScheduleController {
 
+    private final ApplicationEventPublisher applicationEventPublisher;
+
     private final ScheduleRepository scheduleRepository;
 
     private final ScheduleResourceAssembler scheduleResourceAssembler;
 
     @Autowired
-    ScheduleController(ScheduleRepository scheduleRepository, ScheduleResourceAssembler scheduleResourceAssembler) {
+    ScheduleController(ApplicationEventPublisher applicationEventPublisher, ScheduleRepository scheduleRepository, ScheduleResourceAssembler scheduleResourceAssembler) {
+        this.applicationEventPublisher = applicationEventPublisher;
         this.scheduleRepository = scheduleRepository;
         this.scheduleResourceAssembler = scheduleResourceAssembler;
     }
@@ -59,6 +66,7 @@ public class ScheduleController {
     public ResponseEntity create(@Valid @RequestBody ScheduleCreateInput input) {
         Schedule schedule = new Schedule(input.getExpression(), input.getName());
         this.scheduleRepository.saveAndFlush(schedule);
+        this.applicationEventPublisher.publishEvent(new ScheduleCreatedEvent(this, schedule));
 
         return ResponseEntity
                 .created(linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
@@ -69,6 +77,8 @@ public class ScheduleController {
     @RequestMapping(method = DELETE, value = "/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
         this.scheduleRepository.delete(id);
+        this.applicationEventPublisher.publishEvent(new ScheduleDeletedEvent(this, id));
+
         return ResponseEntity.noContent().build();
     }
 
@@ -100,6 +110,8 @@ public class ScheduleController {
         }
 
         this.scheduleRepository.save(schedule);
+        this.applicationEventPublisher.publishEvent(new ScheduleUpdatedEvent(this, schedule));
+
         return ResponseEntity.noContent().build();
     }
 

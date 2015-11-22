@@ -16,8 +16,16 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.cloudfoundry.client.spring.SpringCloudFoundryClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.security.SecureRandom;
+import java.util.Random;
 
 /**
  * Main entry point and configuration class
@@ -32,7 +40,41 @@ public class ChaosLemur {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(ChaosLemur.class, args);
+        SpringApplication.run(ChaosLemur.class, args).start();
+    }
+
+    @Bean
+    SpringCloudFoundryClient cloudFoundryClient(@Value("${loris.cloudfoundry.host}") String host,
+                                                @Value("${loris.cloudfoundry.username}") String username,
+                                                @Value("${loris.cloudfoundry.password}") String password,
+                                                @Value("${loris.cloudfoundry.skipSslValidation:false}") Boolean skipSslValidation) {
+
+        return SpringCloudFoundryClient.builder()
+                .host(host)
+                .username(username)
+                .password(password)
+                .skipSslValidation(skipSslValidation)
+                .build();
+    }
+
+    @Bean
+    JavaTimeModule javaTimeModule() {
+        return new JavaTimeModule();
+    }
+
+    @Bean
+    Random random() {
+        return new SecureRandom();
+    }
+
+    @Bean(destroyMethod = "shutdown")
+    ThreadPoolTaskScheduler taskScheduler(@Value("${loris.scheduler.size}") int poolSize) {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(poolSize);
+        taskScheduler.setThreadNamePrefix("loris-scheduler-");
+        taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
+
+        return taskScheduler;
     }
 
 }

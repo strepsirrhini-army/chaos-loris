@@ -37,7 +37,7 @@ public class ChaosRepositoryTest extends AbstractIntegrationTest {
     private ScheduleRepository scheduleRepository;
 
     @Test
-    public void findBtApplication() {
+    public void findByApplication() {
         Schedule schedule = new Schedule("test-schedule", "test-name");
         this.scheduleRepository.saveAndFlush(schedule);
 
@@ -75,6 +75,27 @@ public class ChaosRepositoryTest extends AbstractIntegrationTest {
         this.chaosRepository.saveAndFlush(chaos2);
 
         List<Chaos> chaoses = this.chaosRepository.findBySchedule(schedule1);
+        assertThat(chaoses).containsExactly(chaos1);
+    }
+
+    @Test
+    public void findByScheduleId() {
+        Application application = new Application(UUID.randomUUID());
+        this.applicationRepository.saveAndFlush(application);
+
+        Schedule schedule1 = new Schedule("test-schedule-1", "test-name-1");
+        this.scheduleRepository.saveAndFlush(schedule1);
+
+        Chaos chaos1 = new Chaos(application, 0.1, schedule1);
+        this.chaosRepository.saveAndFlush(chaos1);
+
+        Schedule schedule2 = new Schedule("test-schedule-2", "test-name-2");
+        this.scheduleRepository.saveAndFlush(schedule2);
+
+        Chaos chaos2 = new Chaos(application, 0.1, schedule2);
+        this.chaosRepository.saveAndFlush(chaos2);
+
+        List<Chaos> chaoses = this.chaosRepository.findByScheduleId(schedule1.getId());
         assertThat(chaoses).containsExactly(chaos1);
     }
 

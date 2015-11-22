@@ -95,8 +95,8 @@ class ChaosController {
     @Transactional(readOnly = true)
     @RequestMapping(method = GET, value = "", produces = HAL_JSON_VALUE)
     public ResponseEntity list(Pageable pageable, PagedResourcesAssembler<Chaos> pagedResourcesAssembler) {
-        Page<Chaos> chaos = this.chaosRepository.findAll(pageable);
-        return ResponseEntity.ok(pagedResourcesAssembler.toResource(chaos, this.chaosResourceAssembler));
+        Page<Chaos> chaoses = this.chaosRepository.findAll(pageable);
+        return ResponseEntity.ok(pagedResourcesAssembler.toResource(chaoses, this.chaosResourceAssembler));
     }
 
     @Transactional(readOnly = true)

@@ -163,6 +163,49 @@ Chaoses are entities that enacapsulate an [Application](#applications), a [Sched
 <%= ERB.new(File.read("../target/generated-snippets/chaos-update/request-fields.md")).result(binding) %>
 
 
+# Events
+Events are entitues that encapsulate an execution of a [Chaos](#chaoses).  Events can be deleted, listed, and read.
+
+
+## Delete an Event
+<%= ERB.new(File.read("../target/generated-snippets/event-delete/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-delete/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-delete/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/event-delete/path-parameters.md")).result(binding) %>
+
+
+## List Events
+<%= ERB.new(File.read("../target/generated-snippets/event-list/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-list/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-list/http-response.md")).result(binding) %>
+
+### Request Parameters
+<%= ERB.new(File.read("../target/generated-snippets/event-list/request-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/event-list/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/event-list/links.md")).result(binding) %>
+
+
+## Read an Event
+<%= ERB.new(File.read("../target/generated-snippets/event-read/curl-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-read/http-request.md")).result(binding) %>
+<%= ERB.new(File.read("../target/generated-snippets/event-read/http-response.md")).result(binding) %>
+
+### Path Parameters
+<%= ERB.new(File.read("../target/generated-snippets/event-read/path-parameters.md")).result(binding) %>
+
+### Response Fields
+<%= ERB.new(File.read("../target/generated-snippets/event-read/response-fields.md")).result(binding) %>
+
+### Links
+<%= ERB.new(File.read("../target/generated-snippets/event-read/links.md")).result(binding) %>
+
+
 # Index
 The index provides the main entry point into the service.  Users of the service should not need to use any URI other than this, and can access any other entity via links.
 
