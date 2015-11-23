@@ -16,17 +16,17 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component;
 
-@ActiveProfiles("test")
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ChaosLemur.class, TestConfiguration.class})
-@Transactional
-@WebAppConfiguration
-public abstract class AbstractIntegrationTest {
+import java.time.Period;
+
+@Component
+final class PeriodConverter implements Converter<String, Period> {
+
+    @Override
+    public Period convert(String source) {
+        return Period.parse(source);
+    }
+
 }

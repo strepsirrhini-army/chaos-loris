@@ -16,17 +16,23 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.fn.Consumer;
 
-@ActiveProfiles("test")
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ChaosLemur.class, TestConfiguration.class})
-@Transactional
-@WebAppConfiguration
-public abstract class AbstractIntegrationTest {
+
+public final class ErrorConsumer implements Consumer<Throwable> {
+
+    public static final ErrorConsumer INSTANCE = new ErrorConsumer();
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private ErrorConsumer() {
+    }
+
+    @Override
+    public void accept(Throwable t) {
+        this.logger.error(t.getMessage(), t);
+    }
+
 }

@@ -16,6 +16,7 @@
 
 package io.pivotal.strepsirrhini.chaosloris.destroyer;
 
+import io.pivotal.strepsirrhini.chaosloris.ErrorConsumer;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
 import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
@@ -47,7 +48,7 @@ final class StandardDestroyer implements Destroyer {
 
     @Override
     public void run() {
-        this.chaosRepository.findByScheduleId(this.scheduleId).stream().parallel()
+        this.chaosRepository.findByScheduleId(this.scheduleId).stream()
                 .forEach(this::terminate);
     }
 
@@ -60,11 +61,10 @@ final class StandardDestroyer implements Destroyer {
 
         this.platform.getInstanceCount(chaos.getApplication())
                 .consume(instanceCount -> {
-                    eventBuilder.totalInstanceCount(instanceCount);
-                    terminate(chaos, eventBuilder, instanceCount);
-                });
-
-        this.eventRepository.save(eventBuilder.build());
+                            eventBuilder.totalInstanceCount(instanceCount);
+                            terminate(chaos, eventBuilder, instanceCount);
+                        }, ErrorConsumer.INSTANCE,
+                        v -> this.eventRepository.save(eventBuilder.build()));
     }
 
     private void terminate(Chaos chaos, Event.EventBuilder eventBuilder, Integer instanceCount) {

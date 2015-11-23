@@ -22,10 +22,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.support.ConversionServiceFactoryBean;
+import org.springframework.core.convert.converter.Converter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.security.SecureRandom;
+import java.time.Period;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Main entry point and configuration class
@@ -55,6 +61,15 @@ public class ChaosLemur {
                 .password(password)
                 .skipSslValidation(skipSslValidation)
                 .build();
+    }
+
+    // TODO: Remove once Converters are configured without ConversionService
+    @Bean
+    public ConversionServiceFactoryBean conversionService(Set<Converter> converters) {
+        ConversionServiceFactoryBean factoryBean = new ConversionServiceFactoryBean();
+        factoryBean.setConverters(converters);
+
+        return factoryBean;
     }
 
     @Bean

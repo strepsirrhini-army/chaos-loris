@@ -16,17 +16,12 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.Test;
 
-@ActiveProfiles("test")
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ChaosLemur.class, TestConfiguration.class})
-@Transactional
-@WebAppConfiguration
-public abstract class AbstractIntegrationTest {
+public final class ErrorConsumerTest {
+
+    @Test
+    public void test() {
+        ErrorConsumer.INSTANCE.accept(new Exception("test-message"));
+    }
 }

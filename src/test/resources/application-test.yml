@@ -14,8 +14,6 @@
 
 ---
 spring:
-  profiles: test
-
   main:
     banner-mode: off
   datasource:

@@ -20,6 +20,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -36,5 +37,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
      */
     @Transactional(readOnly = true)
     List<Event> findByChaos(Chaos chaos);
+
+    /**
+     * Find all of the {@link Event}s that occurred before an {@link Instant}
+     *
+     * @param instant the {@link Instant} to find {@link Event}s before
+     * @return a collection {@link Event}s that occurred before the {@link Instant}
+     */
+    @Transactional(readOnly = true)
+    List<Event> findByExecutedAtBefore(Instant instant);
 
 }

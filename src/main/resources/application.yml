@@ -13,16 +13,22 @@
 # limitations under the License.
 
 ---
+management:
+  security:
+    enabled: false
+loris:
+  reaper:
+    history: P1W
+    schedule: 0 0 * * * *
+  scheduler:
+    size: 20
 security:
   basic:
     enabled: false
 spring:
   jackson:
     serialization:
-      write_dates_as_timestamps: false
-loris:
-  scheduler:
-    size: 20
+      write-dates-as-timestamps: false
 
 ---
 spring:

@@ -14,23 +14,31 @@
  * limitations under the License.
  */
 
-package io.pivotal.strepsirrhini.chaosloris.data;
+package io.pivotal.strepsirrhini.chaosloris.reaper;
 
 import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
+import io.pivotal.strepsirrhini.chaosloris.data.Application;
+import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
+import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.Event;
+import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
+import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.ChronoUnit.HOURS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EventRepositoryTest extends AbstractIntegrationTest {
+public class EventReaperTest extends AbstractIntegrationTest {
 
     @Autowired
     private ApplicationRepository applicationRepository;
@@ -44,35 +52,15 @@ public class EventRepositoryTest extends AbstractIntegrationTest {
     @Autowired
     private ScheduleRepository scheduleRepository;
 
-    @Test
-    public void findByChaos() {
-        Schedule schedule = new Schedule("test-schedule", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+    private EventReaper eventReaper;
 
-        Application application1 = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application1);
-
-        Chaos chaos1 = new Chaos(application1, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos1);
-
-        Event event1 = new Event(chaos1, Instant.now(), Collections.emptyList(), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event1);
-
-        Application application2 = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application2);
-
-        Chaos chaos2 = new Chaos(application2, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos2);
-
-        Event event2 = new Event(chaos2, Instant.now(), Collections.emptyList(), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event2);
-
-        List<Event> events = this.eventRepository.findByChaos(chaos1);
-        assertThat(events).containsExactly(event1);
+    @Before
+    public void setUp() throws Exception {
+        this.eventReaper = new EventReaper(this.eventRepository, Period.parse("P1D"));
     }
 
     @Test
-    public void findByExecutedAtBefore() throws ExecutionException, InterruptedException {
+    public void reap() {
         Schedule schedule = new Schedule("test-schedule", "test-name");
         this.scheduleRepository.saveAndFlush(schedule);
 
@@ -84,17 +72,19 @@ public class EventRepositoryTest extends AbstractIntegrationTest {
 
         Instant now = Instant.now();
 
-        Event event1 = new Event(chaos, now.minus(1, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
+        Event event1 = new Event(chaos, now.minus(3, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event1);
 
         Event event2 = new Event(chaos, now, Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event2);
 
-        Event event3 = new Event(chaos, now.plus(1, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
+        Event event3 = new Event(chaos, now.plus(3, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event3);
 
-        List<Event> events = this.eventRepository.findByExecutedAtBefore(now.minus(1, HOURS));
-        assertThat(events).containsExactly(event1);
+        this.eventReaper.reap();
+
+        List<Event> events = this.eventRepository.findAll();
+        assertThat(events).containsExactly(event2, event3);
     }
 
 }
