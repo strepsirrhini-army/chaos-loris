@@ -20,6 +20,7 @@ import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import org.cloudfoundry.client.CloudFoundryClient;
 import org.cloudfoundry.client.v2.applications.AbstractApplicationEntity;
 import org.cloudfoundry.client.v2.applications.SummaryApplicationRequest;
+import org.cloudfoundry.client.v2.applications.TerminateApplicationInstanceRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,12 +48,19 @@ final class CloudFoundryPlatform implements Platform {
 
         return Streams.wrap(this.cloudFoundryClient.applicationsV2().summary(request))
                 .map(AbstractApplicationEntity::getInstances)
-                .observe(instanceCount -> this.logger.debug("{} Instance Count: {}", application, instanceCount));
+                .observe(instanceCount -> this.logger.debug("{} has {} instances", application, instanceCount));
     }
 
     @Override
-    public void terminateInstance(Application application, Integer instance) {
-        this.logger.info("Terminating {}/{}", application, instance);
+    public Stream<Void> terminateInstance(Application application, Integer instance) {
+        TerminateApplicationInstanceRequest request = TerminateApplicationInstanceRequest.builder()
+                .id(application.getApplicationId().toString())
+                .index(instance.toString())
+                .build();
+
+        return Streams.wrap(this.cloudFoundryClient.applicationsV2().terminateInstance(request))
+                .observeStart(s -> this.logger.info("Terminate {}/{}", application, instance))
+                .observeComplete(v -> this.logger.debug("Terminated {}/{}", application, instance));
     }
 
 }

@@ -31,11 +31,15 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
+import reactor.rx.Stream;
+import reactor.rx.Streams;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static reactor.rx.Streams.concat;
 
 @Component
 final class DestructionScheduler implements HealthIndicator, Lifecycle {
@@ -75,54 +79,55 @@ final class DestructionScheduler implements HealthIndicator, Lifecycle {
 
     @TransactionalEventListener
     public void scheduleCreated(ScheduleCreatedEvent event) {
-        start(event.getSchedule());
+        start(event.getSchedule())
+                .consume();
     }
 
     @TransactionalEventListener
     public void scheduleDeleted(ScheduleDeletedEvent event) {
-        stop(event.getId());
+        stop(event.getId())
+                .consume();
     }
 
     @TransactionalEventListener
     public void scheduleUpdated(ScheduleUpdatedEvent event) {
         Schedule schedule = event.getSchedule();
-        stop(schedule.getId());
-        start(schedule);
+        concat(stop(schedule.getId()), start(schedule))
+                .consume();
     }
 
     @Override
     public void start() {
-        this.scheduleRepository.findAll().stream()
-                .forEach(this::start);
-        this.running.set(true);
+        Streams.from(this.scheduleRepository.findAll())
+                .flatMap(this::start)
+                .observeComplete(v -> this.running.set(true))
+                .consume();
     }
 
     @Override
     public void stop() {
-        this.scheduled.keySet().stream()
-                .forEach(this::stop);
-        this.running.set(false);
+        Streams.from(this.scheduled.keySet())
+                .flatMap(this::stop)
+                .observeComplete(v -> this.running.set(false))
+                .consume();
     }
 
-    private void start(Schedule schedule) {
-        this.logger.debug("Start: {}", schedule);
-
-        Destroyer destroyer = this.destroyerFactory.create(schedule.getId());
-        ScheduledFuture<?> future = this.taskScheduler.schedule(destroyer, new CronTrigger(schedule.getExpression()));
-
-        ScheduledFuture<?> previous = this.scheduled.put(schedule.getId(), future);
-        if (previous != null) {
-            previous.cancel(false);
-        }
+    private Stream<?> start(Schedule schedule) {
+        return Streams.just(schedule)
+                .observeStart(s -> this.logger.info("Start {}", schedule))
+                .map(s -> this.destroyerFactory.create(s.getId()))
+                .map(destroyer -> this.taskScheduler.schedule(destroyer, new CronTrigger(schedule.getExpression())))
+                .map(future -> this.scheduled.put(schedule.getId(), future))
+                .filter(future -> future != null)
+                .observe(future -> future.cancel(false));
     }
 
-    private void stop(Long id) {
-        this.logger.debug("Stop: Schedule(id={})", id);
-
-        ScheduledFuture<?> future = this.scheduled.remove(id);
-        if (future != null) {
-            future.cancel(false);
-        }
+    private Stream<?> stop(Long id) {
+        return Streams.just(id)
+                .map(this.scheduled::remove)
+                .filter(future -> future != null)
+                .observe(future -> future.cancel(false))
+                .observeComplete(s -> this.logger.debug("Stop Schedule(id={})", id));
     }
 
 }

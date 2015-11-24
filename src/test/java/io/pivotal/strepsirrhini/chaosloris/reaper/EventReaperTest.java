@@ -60,7 +60,7 @@ public class EventReaperTest extends AbstractIntegrationTest {
     }
 
     @Test
-    public void reap() {
+    public void doReap() {
         Schedule schedule = new Schedule("test-schedule", "test-name");
         this.scheduleRepository.saveAndFlush(schedule);
 
@@ -81,7 +81,7 @@ public class EventReaperTest extends AbstractIntegrationTest {
         Event event3 = new Event(chaos, now.plus(3, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event3);
 
-        this.eventReaper.reap();
+        this.eventReaper.doReap().next().get();
 
         List<Event> events = this.eventRepository.findAll();
         assertThat(events).containsExactly(event2, event3);

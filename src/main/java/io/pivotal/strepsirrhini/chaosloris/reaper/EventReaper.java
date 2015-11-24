@@ -23,11 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.rx.Stream;
+import reactor.rx.Streams;
 
 import java.time.Instant;
 import java.time.Period;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 class EventReaper {
@@ -45,20 +45,22 @@ class EventReaper {
     }
 
     @Scheduled(cron = "${loris.reaper.schedule}")
-    @Transactional
-    public void reap() {
+    public final void reap() {
+        doReap()
+                .consume();
+    }
+
+    final Stream<?> doReap() {
         Instant limit = Instant.now().minus(this.period);
-        this.logger.debug("Reaping Events before {}", limit.toString());
 
-        AtomicInteger reapCount = new AtomicInteger();
-        this.eventRepository.findByExecutedAtBefore(limit).stream()
-                .forEach(event -> {
-                    this.eventRepository.delete(event);
-                    this.logger.debug("Reaped: {}", event);
-                    reapCount.incrementAndGet();
-                });
-
-        this.logger.info("Reaped {} Events", reapCount.get());
+        return Streams.from(this.eventRepository.findByExecutedAtBefore(limit))
+                .observeStart(s -> this.logger.info("Reap Events before {}", limit.toString()))
+                .flatMap(event -> Streams.just(event)
+                        .observeStart(s -> this.logger.info("Reap {}", event))
+                        .observe(this.eventRepository::delete)
+                        .observeComplete(v -> this.logger.debug("Reaped {}", event)))
+                .count()
+                .observe(count -> this.logger.debug("Reaped {} Events", count));
     }
 
 }

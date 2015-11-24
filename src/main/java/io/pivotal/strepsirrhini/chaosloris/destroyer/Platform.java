@@ -23,6 +23,6 @@ interface Platform {
 
     Stream<Integer> getInstanceCount(Application application);
 
-    void terminateInstance(Application application, Integer instance);
+    Stream<Void> terminateInstance(Application application, Integer instance);
 
 }
