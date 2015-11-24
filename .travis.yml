@@ -4,9 +4,11 @@ jdk:
 - oraclejdk8
 env:
   SPRING_DATASOURCE_USERNAME: travis
-  SPRING_DATASOURCE_PASSWORD: chaos-loris
+  SPRING_DATASOURCE_PASSWORD:
 services:
   - mysql
+before_install:
+  - mysql -e "create database IF NOT EXISTS test;" -uroot
 install: true
 script: ./mvnw package
 notifications:
