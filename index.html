@@ -1,0 +1,1580 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Chaos Loris API Reference</title>
+
+    <link href="stylesheets/screen.css" rel="stylesheet" type="text/css" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" type="text/css" media="print" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+      <script src="javascripts/all.js" type="text/javascript"></script>
+
+      <script>
+        $(function() {
+          setupLanguages(["http","shell"]);
+        });
+      </script>
+  </head>
+
+  <body class="index">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" />
+      </span>
+    </a>
+    <div class="tocify-wrapper">
+      <img src="images/logo.png" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="http">http</a>
+              <a href="#" data-language-name="shell">shell</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <div id="toc">
+      </div>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id="overview">Overview</h1>
+
+<p>Chaos Loris is an application that destroys instances of Cloud Foundry applications.  The destruction is governed by configuration an schedule of destruction and probability of destruction for a specific instance.</p>
+
+<h2 id="http-verbs">HTTP Verbs</h2>
+
+<p>Chaos Loris tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP verbs.</p>
+
+<table><thead>
+<tr>
+<th>Verb</th>
+<th>Usage</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">GET</code></td>
+<td>Used to retrieve a resource</td>
+</tr>
+<tr>
+<td><code class="prettyprint">POST</code></td>
+<td>Used to create a new resource</td>
+</tr>
+<tr>
+<td><code class="prettyprint">PATCH</code></td>
+<td>Used to update an existing resource, including partial updates</td>
+</tr>
+<tr>
+<td><code class="prettyprint">DELETE</code></td>
+<td>Used to delete an existing resource</td>
+</tr>
+</tbody></table>
+
+<h2 id="http-status-codes">HTTP Status Codes</h2>
+
+<p>Chaos Loris tries to adhere as closely as possible to standard HTTP and REST conventions in its use of HTTP status codes.</p>
+
+<table><thead>
+<tr>
+<th>Status code</th>
+<th>Usage</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">200 OK</code></td>
+<td>The request completed successfully</td>
+</tr>
+<tr>
+<td><code class="prettyprint">201 Created</code></td>
+<td>A new resource has been created successfully. The resource&rsquo;s URI is available from the response&rsquo;s <code class="prettyprint">Location</code> header</td>
+</tr>
+<tr>
+<td><code class="prettyprint">204 No Content</code></td>
+<td>An update to an existing resource has been applied successfully</td>
+</tr>
+<tr>
+<td><code class="prettyprint">400 Bad Request</code></td>
+<td>The request was malformed. The response body will include an error providing further information</td>
+</tr>
+<tr>
+<td><code class="prettyprint">404 Not Found</code></td>
+<td>The requested resource did not exist</td>
+</tr>
+</tbody></table>
+
+<h2 id="errors">Errors</h2>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">400</span> <span class="ne">Bad Request</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json;charset=UTF-8</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">201</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"timestamp"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"2015-11-24T19:20:11.920+0000"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"status"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"error"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"Bad Request"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"message"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"The schedule 'https://chaos-lemur/schedules/123' does not exist"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"path"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"/schedules"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+
+<p>Whenever an error response (status code &gt;= <code class="prettyprint">400</code>) is returned, the body will contain a JSON object that describes the problem. The error object has the following structure:</p>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">error</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The HTTP error that occurred, e.g. <code class="prettyprint">Bad Request</code></td>
+</tr>
+<tr>
+<td><code class="prettyprint">message</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>A description of the cause of the error</td>
+</tr>
+<tr>
+<td><code class="prettyprint">path</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The path to which the request was made</td>
+</tr>
+<tr>
+<td><code class="prettyprint">status</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The HTTP status code, e.g. <code class="prettyprint">400</code></td>
+</tr>
+<tr>
+<td><code class="prettyprint">timestamp</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The time, in milliseconds, at which the error occurred</td>
+</tr>
+</tbody></table>
+
+<h2 id="hypermedia">Hypermedia</h2>
+
+<p>Chaos Lemur Notes uses hypermedia and resources include links to other resources in their responses. Responses are in <a href="http://stateless.co/hal_specification.html format">Hypertext Application Language (HAL)</a>.  Links can be found beneath the <code class="prettyprint">_links</code> key. Users of the API should not create URIs themselves, instead they should use the above-described links to navigate</p>
+
+<h1 id="applications">Applications</h1>
+
+<p>Applications are entites that encapsulate the id of a Cloud Foundry application.  Applications can be created, delete, listed, and read.</p>
+
+<h2 id="create-an-application">Create an Application</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/applications'</span> -i -X POST -H <span class="s1">'Content-Type: application/json'</span> -d <span class="s1">'{
+  "applicationId" : "ab42dc01-6868-4859-969d-e2d4dc21419a"
+}'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">POST</span> <span class="nn">/applications</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">62</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"applicationId"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"ab42dc01-6868-4859-969d-e2d4dc21419a"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Location</span><span class="p">:</span> <span class="s">https://chaos-lemur/applications/50</span>
+
+</code></pre>
+
+<h3 id="request-fields">Request Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+<th>Constraints</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">applicationId</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The Cloud Foundry application id</td>
+<td>Must not be null</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-headers">Response Headers</h3>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">Location</code></td>
+<td>The URI of the newly created application</td>
+</tr>
+</tbody></table>
+
+<h2 id="delete-an-application">Delete an Application</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/applications/51'</span> -i -X DELETE
+</code></pre>
+<pre class="highlight http"><code><span class="nf">DELETE</span> <span class="nn">/applications/51</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/applications/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The application&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h2 id="list-applications">List Applications</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/applications?page=2&amp;size=3'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/applications?page=2&amp;size=3</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">1142</span>
+
+{
+  "_embedded" : {
+    "applications" : [ {
+      "applicationId" : "af3fa350-8077-43b9-8859-cccd4df9ef7f",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/applications/48"
+        }
+      }
+    }, {
+      "applicationId" : "d2322caa-3e6f-4308-90f7-8feb6c516b7c",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/applications/42"
+        }
+      }
+    }, {
+      "applicationId" : "e5cc86d0-0d8b-4c5d-a8e0-0401661c9c13",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/applications/47"
+        }
+      }
+    } ]
+  },
+  "_links" : {
+    "first" : {
+      "href" : "https://chaos-lemur/applications?page=0&amp;size=3"
+    },
+    "prev" : {
+      "href" : "https://chaos-lemur/applications?page=1&amp;size=3"
+    },
+    "self" : {
+      "href" : "https://chaos-lemur/applications"
+    },
+    "next" : {
+      "href" : "https://chaos-lemur/applications?page=3&amp;size=3"
+    },
+    "last" : {
+      "href" : "https://chaos-lemur/applications?page=3&amp;size=3"
+    }
+  },
+  "page" : {
+    "size" : 3,
+    "totalElements" : 12,
+    "totalPages" : 4,
+    "number" : 2
+  }
+}
+</code></pre>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page</code></td>
+<td>Page to retrieve</td>
+</tr>
+<tr>
+<td><code class="prettyprint">size</code></td>
+<td>Size of the page to retrieve</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page.number</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The number of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.size</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The size of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalPages</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of pages of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalElements</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">_embedded.applications</code></td>
+<td><code class="prettyprint">Array</code></td>
+<td>A collection of Applications as described in <a href="#read-an-application">Read an Application</a></td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">first</code></td>
+<td>The first page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">last</code></td>
+<td>The last page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">next</code></td>
+<td>The next page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">prev</code></td>
+<td>The previous page of results</td>
+</tr>
+</tbody></table>
+
+<h2 id="read-an-application">Read an Application</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/applications/49'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/applications/49</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">288</span>
+
+{
+  "applicationId" : "89c357dc-e381-41d0-ba6d-9bebfc88eb0f",
+  "_links" : {
+    "self" : {
+      "href" : "https://chaos-lemur/applications/49"
+    },
+    "chaos" : [ {
+      "href" : "https://chaos-lemur/chaoses/24"
+    }, {
+      "href" : "https://chaos-lemur/chaoses/25"
+    } ]
+  }
+}
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/applications/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The application&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">applicationId</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The Cloud Foundry application id</td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">chaos</code></td>
+<td><a href="#chaoses">Chaos</a> instances using this application</td>
+</tr>
+</tbody></table>
+
+<h1 id="chaoses">Chaoses</h1>
+
+<p>Chaoses are entities that enacapsulate an <a href="#applications">Application</a>, a <a href="#schedules">Schedule</a>, and a probability that an instance will experience chaos on each scheduled event.  Chaoses can be created, deleted, listed, read, and updated.</p>
+
+<h2 id="create-a-chaos">Create a Chaos</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/chaoses'</span> -i -X POST -H <span class="s1">'Content-Type: application/json'</span> -d <span class="s1">'{
+  "schedule" : "http://localhost/schedules/29",
+  "application" : "http://localhost/applications/52",
+  "probability" : 0.1
+}'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">POST</span> <span class="nn">/chaoses</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">127</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"schedule"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost/schedules/29"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"application"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"http://localhost/applications/52"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"probability"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Location</span><span class="p">:</span> <span class="s">https://chaos-lemur/chaoses/26</span>
+
+</code></pre>
+
+<h3 id="request-fields">Request Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+<th>Constraints</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">application</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The URI of the application to create chaos on</td>
+<td>Must not be null</td>
+</tr>
+<tr>
+<td><code class="prettyprint">probability</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The probability of an instance of the application experiencing chaos</td>
+<td>Must be at least 0,Must be at most 1,Must not be null</td>
+</tr>
+<tr>
+<td><code class="prettyprint">schedule</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The URI of the schedule to create chaos on</td>
+<td>Must not be null</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-headers">Response Headers</h3>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">Location</code></td>
+<td>The URI of the newly created chaos</td>
+</tr>
+</tbody></table>
+
+<h2 id="delete-a-chaos">Delete a Chaos</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/chaoses/27'</span> -i -X DELETE
+</code></pre>
+<pre class="highlight http"><code><span class="nf">DELETE</span> <span class="nn">/chaoses/27</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/chaoses/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The chaos&rsquo; id</td>
+</tr>
+</tbody></table>
+
+<h2 id="list-chaoses">List Chaoses</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/chaoses?page=2&amp;size=3'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/chaoses?page=2&amp;size=3</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">1532</span>
+
+{
+  "_embedded" : {
+    "chaoses" : [ {
+      "probability" : 0.1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/chaoses/34"
+        },
+        "application" : {
+          "href" : "https://chaos-lemur/applications/60"
+        },
+        "schedule" : {
+          "href" : "https://chaos-lemur/schedules/31"
+        }
+      }
+    }, {
+      "probability" : 0.1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/chaoses/35"
+        },
+        "application" : {
+          "href" : "https://chaos-lemur/applications/61"
+        },
+        "schedule" : {
+          "href" : "https://chaos-lemur/schedules/31"
+        }
+      }
+    }, {
+      "probability" : 0.1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/chaoses/36"
+        },
+        "application" : {
+          "href" : "https://chaos-lemur/applications/62"
+        },
+        "schedule" : {
+          "href" : "https://chaos-lemur/schedules/31"
+        }
+      }
+    } ]
+  },
+  "_links" : {
+    "first" : {
+      "href" : "https://chaos-lemur/chaoses?page=0&amp;size=3"
+    },
+    "prev" : {
+      "href" : "https://chaos-lemur/chaoses?page=1&amp;size=3"
+    },
+    "self" : {
+      "href" : "https://chaos-lemur/chaoses"
+    },
+    "next" : {
+      "href" : "https://chaos-lemur/chaoses?page=3&amp;size=3"
+    },
+    "last" : {
+      "href" : "https://chaos-lemur/chaoses?page=3&amp;size=3"
+    }
+  },
+  "page" : {
+    "size" : 3,
+    "totalElements" : 12,
+    "totalPages" : 4,
+    "number" : 2
+  }
+}
+</code></pre>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page</code></td>
+<td>Page to retrieve</td>
+</tr>
+<tr>
+<td><code class="prettyprint">size</code></td>
+<td>Size of the page to retrieve</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page.number</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The number of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.size</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The size of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalPages</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of pages of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalElements</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">_embedded.chaoses</code></td>
+<td><code class="prettyprint">Array</code></td>
+<td>A collection of Chaoses as described in <a href="#read-a-chaos">Read a Chaos</a></td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">first</code></td>
+<td>The first page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">last</code></td>
+<td>The last page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">next</code></td>
+<td>The next page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">prev</code></td>
+<td>The previous page of results</td>
+</tr>
+</tbody></table>
+
+<h2 id="read-a-chaos">Read a Chaos</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/chaoses/40'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/chaoses/40</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">342</span>
+
+{
+  "probability" : 0.1,
+  "_links" : {
+    "self" : {
+      "href" : "https://chaos-lemur/chaoses/40"
+    },
+    "application" : {
+      "href" : "https://chaos-lemur/applications/66"
+    },
+    "schedule" : {
+      "href" : "https://chaos-lemur/schedules/32"
+    },
+    "event" : {
+      "href" : "https://chaos-lemur/events/16"
+    }
+  }
+}
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/chaoses/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The chaos&rsquo; id</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">probability</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The probability of an instance of the application experiencing chaos</td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">application</code></td>
+<td>The <a href="#applications">Application</a> to create chaos on</td>
+</tr>
+<tr>
+<td><code class="prettyprint">event</code></td>
+<td>The <a href="#events">Events</a> performed by this chaos</td>
+</tr>
+<tr>
+<td><code class="prettyprint">schedule</code></td>
+<td>The <a href="#schedules">Schedule</a> to create chaos on</td>
+</tr>
+</tbody></table>
+
+<h2 id="update-a-chaos">Update a Chaos</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/chaoses/41'</span> -i -X PATCH -H <span class="s1">'Content-Type: application/json'</span> -d <span class="s1">'{
+  "probability" : 0.5
+}'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">PATCH</span> <span class="nn">/chaoses/41</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">25</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"probability"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/chaoses/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The chaos&rsquo; id</td>
+</tr>
+</tbody></table>
+
+<h3 id="request-fields">Request Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+<th>Constraints</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">probability</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The probability of an instance of the application experiencing chaos</td>
+<td>Must be at least 0,Must be at most 1</td>
+</tr>
+</tbody></table>
+
+<h1 id="events">Events</h1>
+
+<p>Events are entitues that encapsulate an execution of a <a href="#chaoses">Chaos</a>.  Events can be deleted, listed, and read.</p>
+
+<h2 id="delete-an-event">Delete an Event</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/events/17'</span> -i -X DELETE
+</code></pre>
+<pre class="highlight http"><code><span class="nf">DELETE</span> <span class="nn">/events/17</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/events/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The event&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h2 id="list-events">List Events</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/events?page=2&amp;size=3'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/events?page=2&amp;size=3</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">1613</span>
+
+{
+  "_embedded" : {
+    "events" : [ {
+      "executedAt" : "2015-11-24T19:20:11.732Z",
+      "terminatedInstances" : [ 6 ],
+      "totalInstanceCount" : 10,
+      "terminatedInstanceCount" : 1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/events/24"
+        },
+        "chaos" : {
+          "href" : "https://chaos-lemur/chaoses/43"
+        }
+      }
+    }, {
+      "executedAt" : "2015-11-24T19:20:11.736Z",
+      "terminatedInstances" : [ 7 ],
+      "totalInstanceCount" : 10,
+      "terminatedInstanceCount" : 1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/events/25"
+        },
+        "chaos" : {
+          "href" : "https://chaos-lemur/chaoses/43"
+        }
+      }
+    }, {
+      "executedAt" : "2015-11-24T19:20:11.739Z",
+      "terminatedInstances" : [ 8 ],
+      "totalInstanceCount" : 10,
+      "terminatedInstanceCount" : 1,
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/events/26"
+        },
+        "chaos" : {
+          "href" : "https://chaos-lemur/chaoses/43"
+        }
+      }
+    } ]
+  },
+  "_links" : {
+    "first" : {
+      "href" : "https://chaos-lemur/events?page=0&amp;size=3"
+    },
+    "prev" : {
+      "href" : "https://chaos-lemur/events?page=1&amp;size=3"
+    },
+    "self" : {
+      "href" : "https://chaos-lemur/events"
+    },
+    "next" : {
+      "href" : "https://chaos-lemur/events?page=3&amp;size=3"
+    },
+    "last" : {
+      "href" : "https://chaos-lemur/events?page=3&amp;size=3"
+    }
+  },
+  "page" : {
+    "size" : 3,
+    "totalElements" : 12,
+    "totalPages" : 4,
+    "number" : 2
+  }
+}
+</code></pre>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page</code></td>
+<td>Page to retrieve</td>
+</tr>
+<tr>
+<td><code class="prettyprint">size</code></td>
+<td>Size of the page to retrieve</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page.number</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The number of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.size</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The size of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalPages</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of pages of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalElements</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">_embedded.events</code></td>
+<td><code class="prettyprint">Array</code></td>
+<td>A collection of Events as described in <a href="#read-an-event">Read an Event</a></td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">first</code></td>
+<td>The first page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">last</code></td>
+<td>The last page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">next</code></td>
+<td>The next page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">prev</code></td>
+<td>The previous page of results</td>
+</tr>
+</tbody></table>
+
+<h2 id="read-an-event">Read an Event</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/events/30'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/events/30</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">301</span>
+
+{
+  "executedAt" : "2015-11-24T19:20:11.822Z",
+  "terminatedInstances" : [ 3 ],
+  "totalInstanceCount" : 10,
+  "terminatedInstanceCount" : 1,
+  "_links" : {
+    "self" : {
+      "href" : "https://chaos-lemur/events/30"
+    },
+    "chaos" : {
+      "href" : "https://chaos-lemur/chaoses/44"
+    }
+  }
+}
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/events/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The event&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">executedAt</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>An ISO-8601 timestamp for when the event occurred</td>
+</tr>
+<tr>
+<td><code class="prettyprint">terminatedInstances</code></td>
+<td><code class="prettyprint">Array</code></td>
+<td>The instances terminated during the event</td>
+</tr>
+<tr>
+<td><code class="prettyprint">totalInstanceCount</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of instances that were candidates for termination during the event</td>
+</tr>
+<tr>
+<td><code class="prettyprint">terminatedInstanceCount</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of instances terminated during the event</td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">chaos</code></td>
+<td>The <a href="#chaoses">Chaos</a> that triggered the event</td>
+</tr>
+</tbody></table>
+
+<h1 id="index">Index</h1>
+
+<p>The index provides the main entry point into the service.  Users of the service should not need to use any URI other than this, and can access any other entity via links.</p>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">373</span>
+
+{
+  "_links" : {
+    "self" : {
+      "href" : "https://chaos-lemur/"
+    },
+    "applications" : {
+      "href" : "https://chaos-lemur/applications"
+    },
+    "chaoses" : {
+      "href" : "https://chaos-lemur/chaoses"
+    },
+    "events" : {
+      "href" : "https://chaos-lemur/events"
+    },
+    "schedules" : {
+      "href" : "https://chaos-lemur/schedules"
+    }
+  }
+}
+</code></pre>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">applications</code></td>
+<td>Link to operations on <a href="#applications">Applications</a></td>
+</tr>
+<tr>
+<td><code class="prettyprint">chaoses</code></td>
+<td>Link to operations on <a href="#chaoses">Chaos</a></td>
+</tr>
+<tr>
+<td><code class="prettyprint">events</code></td>
+<td>Link to operations on <a href="#events">Events</a></td>
+</tr>
+<tr>
+<td><code class="prettyprint">schedules</code></td>
+<td>Link to operations on <a href="#schedules">Schedules</a></td>
+</tr>
+</tbody></table>
+
+<h1 id="schedules">Schedules</h1>
+
+<p>Schedules are entities that enacapsulate a name and a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">CRON expression</a>.  Schedules can be created, deleted, listed, read, and updated.</p>
+
+<h2 id="create-a-schedule">Create a Schedule</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/schedules'</span> -i -X POST -H <span class="s1">'Content-Type: application/json'</span> -d <span class="s1">'{
+  "name" : "hourly",
+  "expression" : "0 0 * * * *"
+}'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">POST</span> <span class="nn">/schedules</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">55</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"hourly"</span><span class="p">,</span><span class="w">
+  </span><span class="nt">"expression"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"0 0 * * * *"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">201</span> <span class="ne">Created</span>
+<span class="na">Location</span><span class="p">:</span> <span class="s">https://chaos-lemur/schedules/37</span>
+
+</code></pre>
+
+<h3 id="request-fields">Request Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+<th>Constraints</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">expression</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">CRON expression</a> of the schedule</td>
+<td>Must not be null</td>
+</tr>
+<tr>
+<td><code class="prettyprint">name</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The user-readable name of the schedule</td>
+<td>Must not be null</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-headers">Response Headers</h3>
+
+<table><thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">Location</code></td>
+<td>The URI of the newly created schedule</td>
+</tr>
+</tbody></table>
+
+<h2 id="delete-a-schedule">Delete a Schedule</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/schedules/38'</span> -i -X DELETE
+</code></pre>
+<pre class="highlight http"><code><span class="nf">DELETE</span> <span class="nn">/schedules/38</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/schedules/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The schedule&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h2 id="list-schedules">List Schedules</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/schedules?page=2&amp;size=3'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/schedules?page=2&amp;size=3</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">1112</span>
+
+{
+  "_embedded" : {
+    "schedules" : [ {
+      "expression" : "0 0 * * * *",
+      "name" : "hourly-6",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/schedules/46"
+        }
+      }
+    }, {
+      "expression" : "0 0 * * * *",
+      "name" : "hourly-7",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/schedules/47"
+        }
+      }
+    }, {
+      "expression" : "0 0 * * * *",
+      "name" : "hourly-8",
+      "_links" : {
+        "self" : {
+          "href" : "https://chaos-lemur/schedules/48"
+        }
+      }
+    } ]
+  },
+  "_links" : {
+    "first" : {
+      "href" : "https://chaos-lemur/schedules?page=0&amp;size=3"
+    },
+    "prev" : {
+      "href" : "https://chaos-lemur/schedules?page=1&amp;size=3"
+    },
+    "self" : {
+      "href" : "https://chaos-lemur/schedules"
+    },
+    "next" : {
+      "href" : "https://chaos-lemur/schedules?page=3&amp;size=3"
+    },
+    "last" : {
+      "href" : "https://chaos-lemur/schedules?page=3&amp;size=3"
+    }
+  },
+  "page" : {
+    "size" : 3,
+    "totalElements" : 12,
+    "totalPages" : 4,
+    "number" : 2
+  }
+}
+</code></pre>
+
+<h3 id="request-parameters">Request Parameters</h3>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page</code></td>
+<td>Page to retrieve</td>
+</tr>
+<tr>
+<td><code class="prettyprint">size</code></td>
+<td>Size of the page to retrieve</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">page.number</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The number of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.size</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The size of this page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalPages</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of pages of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">page.totalElements</code></td>
+<td><code class="prettyprint">Number</code></td>
+<td>The total number of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">_embedded.schedules</code></td>
+<td><code class="prettyprint">Array</code></td>
+<td>A collection of Schedules as described in <a href="#read-a-schedule">Read a Schedule</a></td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">first</code></td>
+<td>The first page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">last</code></td>
+<td>The last page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">next</code></td>
+<td>The next page of results</td>
+</tr>
+<tr>
+<td><code class="prettyprint">prev</code></td>
+<td>The previous page of results</td>
+</tr>
+</tbody></table>
+
+<h2 id="read-a-schedule">Read a Schedule</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/schedules/52'</span> -i -H <span class="s1">'Accept: application/hal+json'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">GET</span> <span class="nn">/schedules/52</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Accept</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+
+</code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">200</span> <span class="ne">OK</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/hal+json</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">278</span>
+
+{
+  "expression" : "0 0 * * * *",
+  "name" : "hourly",
+  "_links" : {
+    "self" : {
+      "href" : "https://chaos-lemur/schedules/52"
+    },
+    "chaos" : [ {
+      "href" : "https://chaos-lemur/chaoses/45"
+    }, {
+      "href" : "https://chaos-lemur/chaoses/46"
+    } ]
+  }
+}
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/schedules/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The schedule&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h3 id="response-fields">Response Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">expression</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">CRON expression</a> of the schedule</td>
+</tr>
+<tr>
+<td><code class="prettyprint">name</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The user-readable name of the schedule</td>
+</tr>
+</tbody></table>
+
+<h3 id="links">Links</h3>
+
+<table><thead>
+<tr>
+<th>Relation</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">chaos</code></td>
+<td><a href="#chaoses">Chaos</a> instances using this schedule</td>
+</tr>
+</tbody></table>
+
+<h2 id="update-a-schedule">Update a Schedule</h2>
+<pre class="highlight shell"><code><span class="gp">$ </span>curl <span class="s1">'https://chaos-lemur/schedules/39'</span> -i -X PATCH -H <span class="s1">'Content-Type: application/json'</span> -d <span class="s1">'{
+  "name" : "default"
+}'</span>
+</code></pre>
+<pre class="highlight http"><code><span class="nf">PATCH</span> <span class="nn">/schedules/39</span> <span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">application/json</span>
+<span class="na">Host</span><span class="p">:</span> <span class="s">chaos-lemur</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">24</span>
+
+<span class="p">{</span><span class="w">
+  </span><span class="nt">"name"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="s2">"default"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<pre class="highlight http"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">204</span> <span class="ne">No Content</span>
+
+</code></pre>
+
+<h3 id="path-parameters">Path Parameters</h3>
+
+<p><code class="prettyprint">/schedules/{id}</code></p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">id</code></td>
+<td>The schedule&rsquo;s id</td>
+</tr>
+</tbody></table>
+
+<h3 id="request-fields">Request Fields</h3>
+
+<table><thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
+<th>Description</th>
+<th>Constraints</th>
+</tr>
+</thead><tbody>
+<tr>
+<td><code class="prettyprint">expression</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html">CRON expression</a> of the schedule</td>
+<td></td>
+</tr>
+<tr>
+<td><code class="prettyprint">name</code></td>
+<td><code class="prettyprint">String</code></td>
+<td>The user-readable name of the schedule</td>
+<td></td>
+</tr>
+</tbody></table>
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="http">http</a>
+                <a href="#" data-language-name="shell">shell</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
