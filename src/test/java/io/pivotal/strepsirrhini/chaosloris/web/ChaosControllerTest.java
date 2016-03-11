@@ -63,14 +63,14 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 0.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 0.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", matchesPattern(".*/chaoses/[\\d]+")));
+            .andExpect(status().isCreated())
+            .andExpect(header().string("Location", matchesPattern(".*/chaoses/[\\d]+")));
 
         assertThat(this.chaosRepository.count()).isEqualTo(1);
     }
@@ -87,13 +87,13 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 0.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 0.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -105,12 +105,12 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 0.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("probability", 0.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -122,12 +122,12 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -139,48 +139,12 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 0.1)
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 0.1)
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void createProbabilityLessThanZero() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", -0.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
-
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void createProbabilityZero() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 0)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
-
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isCreated());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -192,13 +156,31 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 1.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 1.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createProbabilityLessThanZero() throws Exception {
+        Application application = new Application(UUID.randomUUID());
+        this.applicationRepository.saveAndFlush(application);
+
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        this.scheduleRepository.saveAndFlush(schedule);
+
+        String content = asJson(MapBuilder.builder()
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", -0.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -210,13 +192,31 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isCreated());
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void createProbabilityZero() throws Exception {
+        Application application = new Application(UUID.randomUUID());
+        this.applicationRepository.saveAndFlush(application);
+
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        this.scheduleRepository.saveAndFlush(schedule);
+
+        String content = asJson(MapBuilder.builder()
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 0)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -231,7 +231,7 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         this.mockMvc.perform(delete("/chaoses/{id}", chaos.getId()))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(this.chaosRepository.exists(chaos.getId())).isFalse();
     }
@@ -239,7 +239,7 @@ public class ChaosControllerTest extends AbstractControllerTest {
     @Test
     public void deleteDoesNotExist() throws Exception {
         this.mockMvc.perform(delete("/chaoses/{id}", Long.MAX_VALUE))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -254,10 +254,10 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         this.mockMvc.perform(get("/chaoses").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page").exists())
-                .andExpect(jsonPath("$._embedded.chaoses").value(hasSize(1)))
-                .andExpect(jsonPath("$._links.self").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page").exists())
+            .andExpect(jsonPath("$._embedded.chaoses").value(hasSize(1)))
+            .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -272,17 +272,17 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         this.mockMvc.perform(get("/chaoses/{id}", chaos.getId()).accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.probability").value(0.1))
-                .andExpect(jsonPath("$._links.self").exists())
-                .andExpect(jsonPath("$._links.application").exists())
-                .andExpect(jsonPath("$._links.schedule").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.probability").value(0.1))
+            .andExpect(jsonPath("$._links.self").exists())
+            .andExpect(jsonPath("$._links.application").exists())
+            .andExpect(jsonPath("$._links.schedule").exists());
     }
 
     @Test
     public void readDoesNotExist() throws Exception {
         this.mockMvc.perform(get("/chaoses/{id}", Long.MAX_VALUE).accept(HAL_JSON))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -297,11 +297,11 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 0.5)
-                .build());
+            .entry("probability", 0.5)
+            .build());
 
         this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(chaos.getProbability()).isEqualTo(0.5);
     }
@@ -309,49 +309,11 @@ public class ChaosControllerTest extends AbstractControllerTest {
     @Test
     public void updateDoesNotExist() throws Exception {
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 0.5)
-                .build());
+            .entry("probability", 0.5)
+            .build());
 
         this.mockMvc.perform(patch("/chaoses/{id}", Long.MAX_VALUE).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void updateProbabilityLessThanZero() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
-
-        String content = asJson(MapBuilder.builder()
-                .entry("probability", -0.1)
-                .build());
-
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void updateProbabilityZero() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
-
-        String content = asJson(MapBuilder.builder()
-                .entry("probability", 0)
-                .build());
-
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -366,11 +328,30 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 1.1)
-                .build());
+            .entry("probability", 1.1)
+            .build());
 
         this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void updateProbabilityLessThanZero() throws Exception {
+        Application application = new Application(UUID.randomUUID());
+        this.applicationRepository.saveAndFlush(application);
+
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        this.scheduleRepository.saveAndFlush(schedule);
+
+        Chaos chaos = new Chaos(application, 0.1, schedule);
+        this.chaosRepository.saveAndFlush(chaos);
+
+        String content = asJson(MapBuilder.builder()
+            .entry("probability", -0.1)
+            .build());
+
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -385,11 +366,30 @@ public class ChaosControllerTest extends AbstractControllerTest {
         this.chaosRepository.saveAndFlush(chaos);
 
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 1)
-                .build());
+            .entry("probability", 1)
+            .build());
 
         this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
+    }
+
+    @Test
+    public void updateProbabilityZero() throws Exception {
+        Application application = new Application(UUID.randomUUID());
+        this.applicationRepository.saveAndFlush(application);
+
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        this.scheduleRepository.saveAndFlush(schedule);
+
+        Chaos chaos = new Chaos(application, 0.1, schedule);
+        this.chaosRepository.saveAndFlush(chaos);
+
+        String content = asJson(MapBuilder.builder()
+            .entry("probability", 0)
+            .build());
+
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isNoContent());
     }
 
 }

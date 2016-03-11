@@ -16,6 +16,7 @@
 
 package io.pivotal.strepsirrhini.chaosloris.reaper;
 
+import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import reactor.rx.Stream;
-import reactor.rx.Streams;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.time.Period;
@@ -47,20 +48,26 @@ class EventReaper {
     @Scheduled(cron = "${loris.reaper.schedule}")
     public final void reap() {
         doReap()
-                .consume();
+            .subscribe();
     }
 
-    final Stream<?> doReap() {
+    final Mono<Long> doReap() {
         Instant limit = Instant.now().minus(this.period);
 
-        return Streams.from(this.eventRepository.findByExecutedAtBefore(limit))
-                .observeStart(s -> this.logger.info("Reap Events before {}", limit.toString()))
-                .flatMap(event -> Streams.just(event)
-                        .observeStart(s -> this.logger.info("Reap {}", event))
-                        .observe(this.eventRepository::delete)
-                        .observeComplete(v -> this.logger.debug("Reaped {}", event)))
-                .count()
-                .observe(count -> this.logger.debug("Reaped {} Events", count));
+        return Flux
+            .fromIterable(this.eventRepository.findByExecutedAtBefore(limit))
+            .flatMap(event -> reap(this.eventRepository, event, this.logger))
+            .count()
+            .doOnSubscribe(s -> this.logger.info("Reap Events before {}", limit.toString()))
+            .doOnSuccess(count -> this.logger.debug("Reaped {} Events", count));
+    }
+
+    private static Mono<Event> reap(EventRepository eventRepository, Event event, Logger logger) {
+        return Mono
+            .just(event)
+            .doOnSubscribe(s -> logger.info("Reap {}", event))
+            .doOnSuccess(eventRepository::delete)  // TODO: What to do here?
+            .doOnSuccess(e -> logger.debug("Reaped {}", e));
     }
 
 }

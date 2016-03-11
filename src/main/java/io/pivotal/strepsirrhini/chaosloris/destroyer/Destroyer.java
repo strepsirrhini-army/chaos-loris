@@ -17,4 +17,5 @@
 package io.pivotal.strepsirrhini.chaosloris.destroyer;
 
 interface Destroyer extends Runnable {
+
 }

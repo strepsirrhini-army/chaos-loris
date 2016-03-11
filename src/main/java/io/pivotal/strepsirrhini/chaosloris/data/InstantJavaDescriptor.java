@@ -38,87 +38,87 @@ class InstantJavaDescriptor extends AbstractTypeDescriptor<Instant> {
 
     @SuppressWarnings("unchecked")
     public InstantJavaDescriptor() {
-        super( Instant.class, ImmutableMutabilityPlan.INSTANCE );
-    }
-
-    @Override
-    public String toString(Instant value) {
-        return InstantType.FORMATTER.format( ZonedDateTime.ofInstant( value, ZoneId.of( "UTC" ) ) );
+        super(Instant.class, ImmutableMutabilityPlan.INSTANCE);
     }
 
     @Override
     public Instant fromString(String string) {
-        return (Instant) InstantType.FORMATTER.parse( string );
+        return (Instant) InstantType.FORMATTER.parse(string);
+    }
+
+    @Override
+    public String toString(Instant value) {
+        return InstantType.FORMATTER.format(ZonedDateTime.ofInstant(value, ZoneId.of("UTC")));
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <X> X unwrap(Instant instant, Class<X> type, WrapperOptions options) {
-        if ( instant == null ) {
+        if (instant == null) {
             return null;
         }
 
-        if ( Instant.class.isAssignableFrom( type ) ) {
+        if (Instant.class.isAssignableFrom(type)) {
             return (X) instant;
         }
 
-        if ( Calendar.class.isAssignableFrom( type ) ) {
-            final ZoneId zoneId = ZoneId.ofOffset( "UTC", ZoneOffset.UTC );
-            return (X) GregorianCalendar.from( instant.atZone( zoneId ) );
+        if (Calendar.class.isAssignableFrom(type)) {
+            final ZoneId zoneId = ZoneId.ofOffset("UTC", ZoneOffset.UTC);
+            return (X) GregorianCalendar.from(instant.atZone(zoneId));
         }
 
-        if ( java.sql.Timestamp.class.isAssignableFrom( type ) ) {
-            return (X) Timestamp.from( instant );
+        if (java.sql.Timestamp.class.isAssignableFrom(type)) {
+            return (X) Timestamp.from(instant);
         }
 
-        if ( java.sql.Date.class.isAssignableFrom( type ) ) {
-            return (X) java.sql.Date.from( instant );
+        if (java.sql.Date.class.isAssignableFrom(type)) {
+            return (X) java.sql.Date.from(instant);
         }
 
-        if ( java.sql.Time.class.isAssignableFrom( type ) ) {
-            return (X) java.sql.Time.from( instant );
+        if (java.sql.Time.class.isAssignableFrom(type)) {
+            return (X) java.sql.Time.from(instant);
         }
 
-        if ( java.util.Date.class.isAssignableFrom( type ) ) {
-            return (X) java.util.Date.from( instant );
+        if (java.util.Date.class.isAssignableFrom(type)) {
+            return (X) java.util.Date.from(instant);
         }
 
-        if ( Long.class.isAssignableFrom( type ) ) {
-            return (X) Long.valueOf( instant.toEpochMilli() );
+        if (Long.class.isAssignableFrom(type)) {
+            return (X) Long.valueOf(instant.toEpochMilli());
         }
 
-        throw unknownUnwrap( type );
+        throw unknownUnwrap(type);
     }
 
     @Override
     public <X> Instant wrap(X value, WrapperOptions options) {
-        if ( value == null ) {
+        if (value == null) {
             return null;
         }
 
-        if ( Instant.class.isInstance( value ) ) {
+        if (Instant.class.isInstance(value)) {
             return (Instant) value;
         }
 
-        if ( Timestamp.class.isInstance( value ) ) {
+        if (Timestamp.class.isInstance(value)) {
             final Timestamp ts = (Timestamp) value;
             return ts.toInstant();
         }
 
-        if ( Long.class.isInstance( value ) ) {
-            return Instant.ofEpochMilli( (Long) value );
+        if (Long.class.isInstance(value)) {
+            return Instant.ofEpochMilli((Long) value);
         }
 
-        if ( Calendar.class.isInstance( value ) ) {
+        if (Calendar.class.isInstance(value)) {
             final Calendar calendar = (Calendar) value;
-            return ZonedDateTime.ofInstant( calendar.toInstant(), calendar.getTimeZone().toZoneId() ).toInstant();
+            return ZonedDateTime.ofInstant(calendar.toInstant(), calendar.getTimeZone().toZoneId()).toInstant();
         }
 
-        if ( java.util.Date.class.isInstance( value ) ) {
-            return ( (java.util.Date) value ).toInstant();
+        if (java.util.Date.class.isInstance(value)) {
+            return ((java.util.Date) value).toInstant();
         }
 
-        throw unknownWrap( value.getClass() );
+        throw unknownWrap(value.getClass());
     }
 
 }

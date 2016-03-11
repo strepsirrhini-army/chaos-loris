@@ -17,12 +17,12 @@
 package io.pivotal.strepsirrhini.chaosloris.destroyer;
 
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
-import reactor.rx.Stream;
+import reactor.core.publisher.Mono;
 
 interface Platform {
 
-    Stream<Integer> getInstanceCount(Application application);
+    Mono<Integer> getInstanceCount(Application application);
 
-    Stream<Void> terminateInstance(Application application, Integer instance);
+    Mono<Void> terminateInstance(Application application, Integer index);
 
 }

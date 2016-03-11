@@ -17,7 +17,7 @@
 package io.pivotal.strepsirrhini.chaosloris;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.cloudfoundry.client.spring.SpringCloudFoundryClient;
+import org.cloudfoundry.spring.client.SpringCloudFoundryClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,9 +27,6 @@ import org.springframework.core.convert.converter.Converter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.security.SecureRandom;
-import java.time.Period;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -37,7 +34,7 @@ import java.util.Set;
  * Main entry point and configuration class
  */
 @SpringBootApplication
-public class ChaosLemur {
+public class ChaosLoris {
 
     /**
      * Start method
@@ -46,21 +43,7 @@ public class ChaosLemur {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(ChaosLemur.class, args).start();
-    }
-
-    @Bean
-    SpringCloudFoundryClient cloudFoundryClient(@Value("${loris.cloudfoundry.host}") String host,
-                                                @Value("${loris.cloudfoundry.username}") String username,
-                                                @Value("${loris.cloudfoundry.password}") String password,
-                                                @Value("${loris.cloudfoundry.skipSslValidation:false}") Boolean skipSslValidation) {
-
-        return SpringCloudFoundryClient.builder()
-                .host(host)
-                .username(username)
-                .password(password)
-                .skipSslValidation(skipSslValidation)
-                .build();
+        SpringApplication.run(ChaosLoris.class, args).start();
     }
 
     // TODO: Remove once Converters are configured without ConversionService
@@ -70,6 +53,22 @@ public class ChaosLemur {
         factoryBean.setConverters(converters);
 
         return factoryBean;
+    }
+
+    @Bean
+    SpringCloudFoundryClient cloudFoundryClient(@Value("${loris.cloudfoundry.host}") String host,
+                                                @Value("${loris.cloudfoundry.username}") String username,
+                                                @Value("${loris.cloudfoundry.port:443}") Integer port,
+                                                @Value("${loris.cloudfoundry.password}") String password,
+                                                @Value("${loris.cloudfoundry.skipSslValidation:false}") Boolean skipSslValidation) {
+
+        return SpringCloudFoundryClient.builder()
+            .host(host)
+            .username(username)
+            .port(port)
+            .password(password)
+            .skipSslValidation(skipSslValidation)
+            .build();
     }
 
     @Bean

@@ -42,7 +42,7 @@ final class StandardDestroyerFactory implements DestroyerFactory {
 
     @Override
     public StandardDestroyer create(Long scheduleId) {
-        return new StandardDestroyer(scheduleId, this.chaosRepository, this.eventRepository, this.fateEngine, this.platform);
+        return new StandardDestroyer(this.chaosRepository, this.eventRepository, this.fateEngine, this.platform, scheduleId);
     }
 
 }

@@ -44,11 +44,11 @@ public abstract class AbstractControllerTest extends AbstractIntegrationTest {
         this.mockMvc = mockMvcBuilder.build();
     }
 
-    protected void configureMockMvcBuilder(ConfigurableMockMvcBuilder mockMvcBuilder) {
+    protected final <T> String asJson(T entity) throws JsonProcessingException {
+        return this.objectMapper.writeValueAsString(entity);
     }
 
-    protected final String asJson(Object entity) throws JsonProcessingException {
-        return this.objectMapper.writeValueAsString(entity);
+    protected void configureMockMvcBuilder(ConfigurableMockMvcBuilder mockMvcBuilder) {
     }
 
 }

@@ -42,8 +42,8 @@ final class ApplicationResourceAssembler extends ResourceAssemblerSupport<Applic
         ApplicationResource resource = createResourceWithId(application.getId(), application);
 
         this.chaosRepository.findByApplication(application).stream()
-                .map(chaos -> linkTo(methodOn(ChaosController.class).read(chaos.getId())).withRel("chaos"))
-                .forEach(resource::add);
+            .map(chaos -> linkTo(methodOn(ChaosController.class).read(chaos.getId())).withRel("chaos"))
+            .forEach(resource::add);
 
         return resource;
     }

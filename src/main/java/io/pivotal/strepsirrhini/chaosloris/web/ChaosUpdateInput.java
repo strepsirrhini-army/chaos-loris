@@ -23,9 +23,7 @@ import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 
 /**
- * Input object for updating a {@link Chaos}
- * <p>
- * <b>This class is not threadsafe</b>
+ * Input object for updating a {@link Chaos} <p> <b>This class is not threadsafe</b>
  */
 @Data
 public final class ChaosUpdateInput {

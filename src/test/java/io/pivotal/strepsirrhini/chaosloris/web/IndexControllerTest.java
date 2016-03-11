@@ -29,12 +29,12 @@ public class IndexControllerTest extends AbstractControllerTest {
     @Test
     public void index() throws Exception {
         this.mockMvc.perform(get("/").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$._links.self").exists())
-                .andExpect(jsonPath("$._links.applications").exists())
-                .andExpect(jsonPath("$._links.chaoses").exists())
-                .andExpect(jsonPath("$._links.events").exists())
-                .andExpect(jsonPath("$._links.schedules").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._links.self").exists())
+            .andExpect(jsonPath("$._links.applications").exists())
+            .andExpect(jsonPath("$._links.chaoses").exists())
+            .andExpect(jsonPath("$._links.events").exists())
+            .andExpect(jsonPath("$._links.schedules").exists());
     }
 
 }

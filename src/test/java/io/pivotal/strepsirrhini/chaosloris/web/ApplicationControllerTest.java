@@ -45,12 +45,12 @@ public class ApplicationControllerTest extends AbstractControllerTest {
         assertThat(this.applicationRepository.count()).isEqualTo(0);
 
         String content = asJson(MapBuilder.builder()
-                .entry("applicationId", UUID.randomUUID().toString())
-                .build());
+            .entry("applicationId", UUID.randomUUID().toString())
+            .build());
 
         this.mockMvc.perform(post("/applications").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", matchesPattern(".*/applications/[\\d]+")));
+            .andExpect(status().isCreated())
+            .andExpect(header().string("Location", matchesPattern(".*/applications/[\\d]+")));
 
         assertThat(this.applicationRepository.count()).isEqualTo(1);
     }
@@ -61,20 +61,20 @@ public class ApplicationControllerTest extends AbstractControllerTest {
         this.applicationRepository.saveAndFlush(application);
 
         String content = asJson(MapBuilder.builder()
-                .entry("applicationId", application.getApplicationId().toString())
-                .build());
+            .entry("applicationId", application.getApplicationId().toString())
+            .build());
 
         this.mockMvc.perform(post("/applications").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullApplicationId() throws Exception {
         String content = asJson(MapBuilder.builder()
-                .build());
+            .build());
 
         this.mockMvc.perform(post("/applications").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -83,13 +83,13 @@ public class ApplicationControllerTest extends AbstractControllerTest {
         this.applicationRepository.saveAndFlush(application);
 
         this.mockMvc.perform(delete("/applications/{id}", application.getId()))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
     }
 
     @Test
     public void deleteDoesNotExist() throws Exception {
         this.mockMvc.perform(delete("/applications/{id}", Long.MAX_VALUE))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -98,10 +98,10 @@ public class ApplicationControllerTest extends AbstractControllerTest {
         this.applicationRepository.saveAndFlush(application);
 
         this.mockMvc.perform(get("/applications").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page").exists())
-                .andExpect(jsonPath("$._embedded.applications").exists())
-                .andExpect(jsonPath("$._links").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page").exists())
+            .andExpect(jsonPath("$._embedded.applications").exists())
+            .andExpect(jsonPath("$._links").exists());
     }
 
     @Test
@@ -110,15 +110,15 @@ public class ApplicationControllerTest extends AbstractControllerTest {
         this.applicationRepository.saveAndFlush(application);
 
         this.mockMvc.perform(get("/applications/{id}", application.getId()).accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.applicationId").value(application.getApplicationId().toString()))
-                .andExpect(jsonPath("$._links.self").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.applicationId").value(application.getApplicationId().toString()))
+            .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
     public void readDoesNotExist() throws Exception {
         this.mockMvc.perform(get("/applications/{id}", Long.MAX_VALUE).accept(HAL_JSON))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
 }

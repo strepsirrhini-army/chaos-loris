@@ -70,7 +70,7 @@ public class EventControllerTest extends AbstractControllerTest {
         this.eventRepository.saveAndFlush(event);
 
         this.mockMvc.perform(delete("/events/{id}", event.getId()))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(this.eventRepository.exists(event.getId())).isFalse();
     }
@@ -78,7 +78,7 @@ public class EventControllerTest extends AbstractControllerTest {
     @Test
     public void deleteDoesNotExist() throws Exception {
         this.mockMvc.perform(delete("/events/{id}", Long.MAX_VALUE))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -96,10 +96,10 @@ public class EventControllerTest extends AbstractControllerTest {
         this.eventRepository.saveAndFlush(event);
 
         this.mockMvc.perform(get("/events").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page").exists())
-                .andExpect(jsonPath("$._embedded.events").value(hasSize(1)))
-                .andExpect(jsonPath("$._links.self").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page").exists())
+            .andExpect(jsonPath("$._embedded.events").value(hasSize(1)))
+            .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -117,18 +117,18 @@ public class EventControllerTest extends AbstractControllerTest {
         this.eventRepository.saveAndFlush(event);
 
         this.mockMvc.perform(get("/events/{id}", event.getId()).accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.executedAt").value(Instant.EPOCH.toString()))
-                .andExpect(jsonPath("$.terminatedInstances").value(contains(0, 1)))
-                .andExpect(jsonPath("$.totalInstanceCount").value(Integer.MIN_VALUE))
-                .andExpect(jsonPath("$._links.self").exists())
-                .andExpect(jsonPath("$._links.chaos").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.executedAt").value(Instant.EPOCH.toString()))
+            .andExpect(jsonPath("$.terminatedInstances").value(contains(0, 1)))
+            .andExpect(jsonPath("$.totalInstanceCount").value(Integer.MIN_VALUE))
+            .andExpect(jsonPath("$._links.self").exists())
+            .andExpect(jsonPath("$._links.chaos").exists());
     }
 
     @Test
     public void readDoesNotExist() throws Exception {
         this.mockMvc.perform(get("/events/{id}", Long.MAX_VALUE).accept(HAL_JSON))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
 }

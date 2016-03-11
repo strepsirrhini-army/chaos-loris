@@ -34,14 +34,14 @@ import static lombok.AccessLevel.PACKAGE;
 @NoArgsConstructor(access = PACKAGE)
 public class Chaos {
 
+    @JsonIgnore
+    @ManyToOne
+    private Application application;
+
     @Id
     @GeneratedValue
     @JsonIgnore
     private Long id;
-
-    @JsonIgnore
-    @ManyToOne
-    private Application application;
 
     private Double probability;
 

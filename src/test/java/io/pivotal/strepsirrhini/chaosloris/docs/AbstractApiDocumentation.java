@@ -40,21 +40,21 @@ import static org.springframework.restdocs.request.RequestDocumentation.requestP
 public abstract class AbstractApiDocumentation extends AbstractControllerTest {
 
     protected static final Snippet PAGEABLE_LINKS = links(
-            linkWithRel("first").optional().description("The first page of results"),
-            linkWithRel("last").optional().description("The last page of results"),
-            linkWithRel("next").optional().description("The next page of results"),
-            linkWithRel("prev").optional().description("The previous page of results"));
+        linkWithRel("first").optional().description("The first page of results"),
+        linkWithRel("last").optional().description("The last page of results"),
+        linkWithRel("next").optional().description("The next page of results"),
+        linkWithRel("prev").optional().description("The previous page of results"));
 
     protected static final Snippet PAGEABLE_REQUEST_PARAMETERS = requestParameters(
-            parameterWithName("page").description("Page to retrieve"),
-            parameterWithName("size").description("Size of the page to retrieve"),
-            parameterWithName("sort").description("Properties that should be sorted by in the format `property,property(,ASC|DESC)`. Default sort direction is ascending. Use multiple `sort` parameters to switch directions, e.g. `?sort=firstname&sort=lastname,asc`."));
+        parameterWithName("page").description("Page to retrieve"),
+        parameterWithName("size").description("Size of the page to retrieve"),
+        parameterWithName("sort").description("Properties that should be sorted by in the format `property,property(,ASC|DESC)`. Default sort direction is ascending. Use multiple `sort` parameters to switch directions, e.g. `?sort=firstname&sort=lastname,asc`."));
 
     protected static final Snippet PAGEABLE_RESPONSE_FIELDS = responseFields(
-            fieldWithPath("page.number").description("The number of this page of results"),
-            fieldWithPath("page.size").description("The size of this page of results"),
-            fieldWithPath("page.totalPages").description("The total number of pages of results"),
-            fieldWithPath("page.totalElements").description("The total number of results"));
+        fieldWithPath("page.number").description("The number of this page of results"),
+        fieldWithPath("page.size").description("The size of this page of results"),
+        fieldWithPath("page.totalPages").description("The total number of pages of results"),
+        fieldWithPath("page.totalElements").description("The total number of results"));
 
     @Rule
     public final RestDocumentation restDocumentation = new RestDocumentation("target/generated-snippets");
@@ -64,14 +64,14 @@ public abstract class AbstractApiDocumentation extends AbstractControllerTest {
     @Override
     protected final void configureMockMvcBuilder(ConfigurableMockMvcBuilder mockMvcBuilder) {
         this.document = document("{method-name}",
-                preprocessRequest(prettyPrint()),
-                preprocessResponse(prettyPrint()));
+            preprocessRequest(prettyPrint()),
+            preprocessResponse(prettyPrint()));
 
         mockMvcBuilder
-                .apply(documentationConfiguration(this.restDocumentation)
-                        .uris().withScheme("https").withHost("chaos-lemur").withPort(443).and()
-                        .writerResolver(new MarkdownWriterResolver()))
-                .alwaysDo(this.document);
+            .apply(documentationConfiguration(this.restDocumentation)
+                .uris().withScheme("https").withHost("chaos-loris").withPort(443).and()
+                .writerResolver(new MarkdownWriterResolver()))
+            .alwaysDo(this.document);
     }
 
     protected final String createPages(Consumer<Integer> pageCreator) {

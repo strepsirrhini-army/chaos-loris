@@ -33,30 +33,30 @@ public class IndexDocumentation extends AbstractApiDocumentation {
     @Test
     public void error() throws Exception {
         this.document.snippets(
-                responseFields(
-                        fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
-                        fieldWithPath("message").description("A description of the cause of the error"),
-                        fieldWithPath("path").description("The path to which the request was made"),
-                        fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
-                        fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred"))
+            responseFields(
+                fieldWithPath("error").description("The HTTP error that occurred, e.g. `Bad Request`"),
+                fieldWithPath("message").description("A description of the cause of the error"),
+                fieldWithPath("path").description("The path to which the request was made"),
+                fieldWithPath("status").description("The HTTP status code, e.g. `400`"),
+                fieldWithPath("timestamp").description("The time, in milliseconds, at which the error occurred"))
         );
 
         this.mockMvc
-                .perform(get("/error")
-                        .requestAttr(ERROR_STATUS_CODE, 400)
-                        .requestAttr(ERROR_REQUEST_URI, "/schedules")
-                        .requestAttr(ERROR_MESSAGE, "The schedule 'https://chaos-lemur/schedules/123' does not exist"));
+            .perform(get("/error")
+                .requestAttr(ERROR_STATUS_CODE, 400)
+                .requestAttr(ERROR_REQUEST_URI, "/schedules")
+                .requestAttr(ERROR_MESSAGE, "The schedule 'https://chaos-loris/schedules/123' does not exist"));
     }
 
     @Test
     public void index() throws Exception {
         this.document.snippets(
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("applications").description("Link to operations on [Applications](#applications)"),
-                        linkWithRel("chaoses").description("Link to operations on [Chaos](#chaoses)"),
-                        linkWithRel("events").description("Link to operations on [Events](#events)"),
-                        linkWithRel("schedules").description("Link to operations on [Schedules](#schedules)")));
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("applications").description("Link to operations on [Applications](#applications)"),
+                linkWithRel("chaoses").description("Link to operations on [Chaos](#chaoses)"),
+                linkWithRel("events").description("Link to operations on [Events](#events)"),
+                linkWithRel("schedules").description("Link to operations on [Schedules](#schedules)")));
 
         this.mockMvc.perform(get("/").accept(HAL_JSON));
     }

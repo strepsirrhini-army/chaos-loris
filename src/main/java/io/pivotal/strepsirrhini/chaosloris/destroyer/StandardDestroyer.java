@@ -24,20 +24,20 @@ import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.fn.tuple.Tuple;
-import reactor.rx.Stream;
-import reactor.rx.Streams;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.tuple.Tuple;
 
 import java.time.Instant;
 
 import static io.pivotal.strepsirrhini.chaosloris.destroyer.FateEngine.Fate.THUMBS_DOWN;
+import static org.cloudfoundry.util.tuple.TupleUtils.function;
+import static org.cloudfoundry.util.tuple.TupleUtils.predicate;
 
 @Data
 final class StandardDestroyer implements Destroyer {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final Long scheduleId;
 
     private final ChaosRepository chaosRepository;
 
@@ -47,34 +47,43 @@ final class StandardDestroyer implements Destroyer {
 
     private final Platform platform;
 
+    private final Long scheduleId;
+
     @Override
     public void run() {
-        Streams.from(this.chaosRepository.findByScheduleId(this.scheduleId))
-                .flatMap(this::terminate)
-                .consume();
+        Flux
+            .fromIterable(this.chaosRepository.findByScheduleId(this.scheduleId))
+            .flatMap(chaos -> terminate(chaos, this.eventRepository, this.fateEngine, this.platform, this.logger))
+            .subscribe();
     }
 
-    private Stream<?> terminate(Chaos chaos) {
-        Event.EventBuilder eventBuilder = Event.builder()
-                .chaos(chaos)
-                .executedAt(Instant.now());
-
-        return this.platform.getInstanceCount(chaos.getApplication())
-                .observeStart(s -> this.logger.info("Start {}", chaos))
-                .observe(eventBuilder::totalInstanceCount)
-                .flatMap(instanceCount -> Streams.range(0, instanceCount))
-                .map(instance -> Tuple.of(instance, this.fateEngine.getFate(chaos)))
-                .filter(tuple -> THUMBS_DOWN == tuple.getT2())
-                .flatMap(tuple -> terminate(chaos.getApplication(), tuple.getT1())
-                        .observeComplete(v -> eventBuilder.terminatedInstance(tuple.getT1())))
-                .observeComplete(v -> {
-                    this.eventRepository.save(eventBuilder.build());
-                    this.logger.debug("Finish {}", chaos);
-                });
+    private static Event.EventBuilder getEventBuilder(Chaos chaos) {
+        return Event.builder()
+            .chaos(chaos)
+            .executedAt(Instant.now());
     }
 
-    private Stream<?> terminate(Application application, Integer instance) {
-        return this.platform.terminateInstance(application, instance);
+    private static Mono<Integer> getInstanceCount(Chaos chaos, Platform platform) {
+        return platform.getInstanceCount(chaos.getApplication());
+    }
+
+    private static Mono<Integer> terminate(Application application, Integer index, Platform platform) {
+        return platform.terminateInstance(application, index)
+            .flatMap(null, t -> Mono.empty(), () -> Mono.just(index))
+            .next();
+    }
+
+    private static Mono<Event> terminate(Chaos chaos, EventRepository eventRepository, FateEngine fateEngine, Platform platform, Logger logger) {
+        return getInstanceCount(chaos, platform)
+            .flatMap(instanceCount -> Flux.range(0, instanceCount))
+            .map(index -> Tuple.of(index, fateEngine.getFate(chaos)))
+            .filter(predicate((index, fate) -> THUMBS_DOWN == fate))
+            .flatMap(function((index, fate) -> terminate(chaos.getApplication(), index, platform)))
+            .reduce(getEventBuilder(chaos), Event.EventBuilder::terminatedInstance)
+            .map(Event.EventBuilder::build)
+            .then(event -> Mono.just(eventRepository.save(event)))
+            .doOnSubscribe(s -> logger.info("Start {}", chaos))
+            .doOnSuccess(e -> logger.debug("Finish {}", chaos));
     }
 
 }

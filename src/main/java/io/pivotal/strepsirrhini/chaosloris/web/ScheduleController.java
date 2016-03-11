@@ -69,8 +69,8 @@ public class ScheduleController {
         this.applicationEventPublisher.publishEvent(new ScheduleCreatedEvent(this, schedule));
 
         return ResponseEntity
-                .created(linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build();
+            .created(linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build();
     }
 
     @Transactional

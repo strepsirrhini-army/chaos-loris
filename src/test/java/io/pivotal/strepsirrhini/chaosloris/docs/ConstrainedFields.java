@@ -35,7 +35,7 @@ final class ConstrainedFields {
         String constraints = StringUtils.collectionToCommaDelimitedString(this.constraintDescriptions.descriptionsForProperty(path));
 
         return fieldWithPath(path).attributes(
-                key("constraints").value(constraints));
+            key("constraints").value(constraints));
     }
 
 }

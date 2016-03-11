@@ -19,9 +19,11 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[CHAOS LORIS] %-5level %msg%n</pattern>
+            <pattern>%-20logger %-5level %msg%n</pattern>
         </encoder>
     </appender>
+
+    <logger name="stream" level="INFO"/>
 
     <root level="OFF">
         <appender-ref ref="STDOUT"/>

@@ -59,19 +59,19 @@ final class MarkdownWriterResolver implements WriterResolver {
         return outputFile;
     }
 
-    private File makeRelativeToConfiguredOutputDir(File outputFile, RestDocumentationContext context) {
+    private static void createDirectoriesIfNecessary(File outputFile) {
+        File parent = outputFile.getParentFile();
+        if (!parent.isDirectory() && !parent.mkdirs()) {
+            throw new IllegalStateException("Failed to create directory '" + parent + "'");
+        }
+    }
+
+    private static File makeRelativeToConfiguredOutputDir(File outputFile, RestDocumentationContext context) {
         File configuredOutputDir = context.getOutputDirectory();
         if (configuredOutputDir != null) {
             return new File(configuredOutputDir, outputFile.getPath());
         }
         return null;
-    }
-
-    private void createDirectoriesIfNecessary(File outputFile) {
-        File parent = outputFile.getParentFile();
-        if (!parent.isDirectory() && !parent.mkdirs()) {
-            throw new IllegalStateException("Failed to create directory '" + parent + "'");
-        }
     }
 
 }

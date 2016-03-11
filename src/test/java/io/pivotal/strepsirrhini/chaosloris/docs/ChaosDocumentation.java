@@ -75,12 +75,12 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         ConstrainedFields fields = new ConstrainedFields(ChaosCreateInput.class);
 
         this.document.snippets(
-                requestFields(
-                        fields.withPath("application").description("The URI of the application to create chaos on"),
-                        fields.withPath("probability").description("The probability of an instance of the application experiencing chaos"),
-                        fields.withPath("schedule").description("The URI of the schedule to create chaos on")),
-                responseHeaders(
-                        headerWithName("Location").description("The URI of the newly created chaos")));
+            requestFields(
+                fields.withPath("application").description("The URI of the application to create chaos on"),
+                fields.withPath("probability").description("The probability of an instance of the application experiencing chaos"),
+                fields.withPath("schedule").description("The URI of the schedule to create chaos on")),
+            responseHeaders(
+                headerWithName("Location").description("The URI of the newly created chaos")));
 
         Application application = new Application(UUID.randomUUID());
         this.applicationRepository.saveAndFlush(application);
@@ -89,10 +89,10 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .entry("probability", 0.1)
-                .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-                .build());
+            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .entry("probability", 0.1)
+            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
+            .build());
 
         this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content));
     }
@@ -109,8 +109,8 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         this.chaosRepository.saveAndFlush(chaos);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The chaos' id")));
+            pathParameters(
+                parameterWithName("id").description("The chaos' id")));
 
         this.mockMvc.perform(delete("/chaoses/{id}", chaos.getId()));
     }
@@ -129,22 +129,22 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         });
 
         this.document.snippets(
-                requestParameters(
-                        parameterWithName("page").description("Page to retrieve"),
-                        parameterWithName("size").description("Size of the page to retrieve")),
-                responseFields(
-                        fieldWithPath("page.number").description("The number of this page of results"),
-                        fieldWithPath("page.size").description("The size of this page of results"),
-                        fieldWithPath("page.totalPages").description("The total number of pages of results"),
-                        fieldWithPath("page.totalElements").description("The total number of results"),
-                        fieldWithPath("_embedded.chaoses").description("A collection of Chaoses as described in [Read a Chaos](#read-a-chaos)"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("first").optional().description("The first page of results"),
-                        linkWithRel("last").optional().description("The last page of results"),
-                        linkWithRel("next").optional().description("The next page of results"),
-                        linkWithRel("prev").optional().description("The previous page of results")));
+            requestParameters(
+                parameterWithName("page").description("Page to retrieve"),
+                parameterWithName("size").description("Size of the page to retrieve")),
+            responseFields(
+                fieldWithPath("page.number").description("The number of this page of results"),
+                fieldWithPath("page.size").description("The size of this page of results"),
+                fieldWithPath("page.totalPages").description("The total number of pages of results"),
+                fieldWithPath("page.totalElements").description("The total number of results"),
+                fieldWithPath("_embedded.chaoses").description("A collection of Chaoses as described in [Read a Chaos](#read-a-chaos)"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("first").optional().description("The first page of results"),
+                linkWithRel("last").optional().description("The last page of results"),
+                linkWithRel("next").optional().description("The next page of results"),
+                linkWithRel("prev").optional().description("The previous page of results")));
 
         this.mockMvc.perform(get("/chaoses" + query).accept(HAL_JSON));
     }
@@ -164,16 +164,16 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         this.eventRepository.saveAndFlush(event);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The chaos' id")),
-                responseFields(
-                        fieldWithPath("probability").description("The probability of an instance of the application experiencing chaos"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("application").description("The [Application](#applications) to create chaos on"),
-                        linkWithRel("event").description("The [Events](#events) performed by this chaos"),
-                        linkWithRel("schedule").description("The [Schedule](#schedules) to create chaos on")));
+            pathParameters(
+                parameterWithName("id").description("The chaos' id")),
+            responseFields(
+                fieldWithPath("probability").description("The probability of an instance of the application experiencing chaos"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("application").description("The [Application](#applications) to create chaos on"),
+                linkWithRel("event").description("The [Events](#events) performed by this chaos"),
+                linkWithRel("schedule").description("The [Schedule](#schedules) to create chaos on")));
 
         this.mockMvc.perform(get("/chaoses/{id}", chaos.getId()).accept(HAL_JSON));
     }
@@ -192,14 +192,14 @@ public class ChaosDocumentation extends AbstractApiDocumentation {
         ConstrainedFields fields = new ConstrainedFields(ChaosUpdateInput.class);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The chaos' id")),
-                requestFields(
-                        fields.withPath("probability").optional().type(NUMBER).description("The probability of an instance of the application experiencing chaos")));
+            pathParameters(
+                parameterWithName("id").description("The chaos' id")),
+            requestFields(
+                fields.withPath("probability").optional().type(NUMBER).description("The probability of an instance of the application experiencing chaos")));
 
         String content = asJson(MapBuilder.builder()
-                .entry("probability", 0.5)
-                .build());
+            .entry("probability", 0.5)
+            .build());
 
         this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content));
     }

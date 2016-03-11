@@ -23,13 +23,13 @@ public final class MatchesPattern extends TypeSafeMatcher<String> {
     }
 
     @Override
-    protected boolean matchesSafely(String item) {
-        return pattern.matcher(item).matches();
+    public void describeTo(Description description) {
+        description.appendText(String.format("a string matching the pattern '%s'", this.pattern));
     }
 
     @Override
-    public void describeTo(Description description) {
-        description.appendText("a string matching the pattern '" + pattern + "'");
+    protected boolean matchesSafely(String item) {
+        return this.pattern.matcher(item).matches();
     }
 
 }

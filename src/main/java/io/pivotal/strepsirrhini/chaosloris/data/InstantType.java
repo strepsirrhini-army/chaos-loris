@@ -41,21 +41,6 @@ public final class InstantType extends AbstractSingleColumnStandardBasicType<Ins
     }
 
     @Override
-    public String objectToSQLString(Instant value, Dialect dialect) throws Exception {
-        return "{ts '" + FORMATTER.format(ZonedDateTime.ofInstant(value, ZoneId.of("UTC"))) + "'}";
-    }
-
-    @Override
-    public Instant seed(SessionImplementor session) {
-        return Instant.now();
-    }
-
-    @Override
-    public Instant next(Instant current, SessionImplementor session) {
-        return Instant.now();
-    }
-
-    @Override
     @SuppressWarnings("unchecked")
     public Comparator<Instant> getComparator() {
         return ComparableComparator.INSTANCE;
@@ -64,6 +49,21 @@ public final class InstantType extends AbstractSingleColumnStandardBasicType<Ins
     @Override
     public String getName() {
         return Instant.class.getSimpleName();
+    }
+
+    @Override
+    public Instant next(Instant current, SessionImplementor session) {
+        return Instant.now();
+    }
+
+    @Override
+    public String objectToSQLString(Instant value, Dialect dialect) throws Exception {
+        return "{ts '" + FORMATTER.format(ZonedDateTime.ofInstant(value, ZoneId.of("UTC"))) + "'}";
+    }
+
+    @Override
+    public Instant seed(SessionImplementor session) {
+        return Instant.now();
     }
 
     @Override

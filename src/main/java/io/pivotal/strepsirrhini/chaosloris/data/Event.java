@@ -41,24 +41,24 @@ import static lombok.AccessLevel.PACKAGE;
 @NoArgsConstructor(access = PACKAGE)
 public class Event {
 
-    @Id
-    @GeneratedValue
-    @JsonIgnore
-    private volatile Long id;
-
     @ManyToOne
     @JsonIgnore
-    private volatile Chaos chaos;
+    private Chaos chaos;
 
     // TODO: Remove with Hibernate 5
     @Type(type = "io.pivotal.strepsirrhini.chaosloris.data.InstantType")
-    private volatile Instant executedAt;
+    private Instant executedAt;
+
+    @Id
+    @GeneratedValue
+    @JsonIgnore
+    private Long id;
 
     @ElementCollection
     @OrderBy
-    private volatile List<Integer> terminatedInstances;
+    private List<Integer> terminatedInstances;
 
-    private volatile Integer totalInstanceCount;
+    private Integer totalInstanceCount;
 
     @Builder
     public Event(Chaos chaos, Instant executedAt, @Singular List<Integer> terminatedInstances, Integer totalInstanceCount) {

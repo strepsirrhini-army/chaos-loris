@@ -29,6 +29,6 @@ import java.util.UUID;
 public final class ApplicationCreateInput {
 
     @NotNull
-    private volatile UUID applicationId;
+    private UUID applicationId;
 
 }

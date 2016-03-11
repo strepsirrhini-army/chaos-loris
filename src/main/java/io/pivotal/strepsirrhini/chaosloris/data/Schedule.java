@@ -28,9 +28,7 @@ import javax.persistence.Id;
 import static lombok.AccessLevel.PACKAGE;
 
 /**
- * A schedule for driving chaos
- * <p>
- * <b>This class is not threadsafe</b>
+ * A schedule for driving chaos <p> <b>This class is not threadsafe</b>
  */
 @Data
 @Entity
@@ -38,12 +36,12 @@ import static lombok.AccessLevel.PACKAGE;
 @NoArgsConstructor(access = PACKAGE)
 public class Schedule {
 
+    private String expression;
+
     @Id
     @GeneratedValue
     @JsonIgnore
     private Long id;
-
-    private String expression;
 
     private String name;
 

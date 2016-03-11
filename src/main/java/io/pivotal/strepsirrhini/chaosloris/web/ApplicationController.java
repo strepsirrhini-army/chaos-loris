@@ -60,8 +60,8 @@ public class ApplicationController {
         this.applicationRepository.saveAndFlush(application);
 
         return ResponseEntity
-                .created(linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-                .build();
+            .created(linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
+            .build();
     }
 
     @Transactional

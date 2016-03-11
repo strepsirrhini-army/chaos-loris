@@ -25,9 +25,7 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 /**
- * Input object for creating a {@link Chaos}
- * <p>
- * <b>This class is not threadsafe</b>
+ * Input object for creating a {@link Chaos} <p> <b>This class is not threadsafe</b>
  */
 @Data
 public final class ChaosCreateInput {

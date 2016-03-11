@@ -45,13 +45,13 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         assertThat(this.scheduleRepository.count()).isEqualTo(0);
 
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "test-expression")
-                .entry("name", "test-name")
-                .build());
+            .entry("expression", "test-expression")
+            .entry("name", "test-name")
+            .build());
 
         this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", matchesPattern(".*/schedules/[\\d]+")));
+            .andExpect(status().isCreated())
+            .andExpect(header().string("Location", matchesPattern(".*/schedules/[\\d]+")));
 
         assertThat(this.scheduleRepository.count()).isEqualTo(1);
     }
@@ -62,32 +62,32 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "test-expression")
-                .entry("name", "test-name")
-                .build());
+            .entry("expression", "test-expression")
+            .entry("name", "test-name")
+            .build());
 
         this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void createNullName() throws Exception {
-        String content = asJson(MapBuilder.builder()
-                .entry("expression", "test-expression")
-                .build());
-
-        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullExpression() throws Exception {
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "test-expression")
-                .build());
+            .entry("expression", "test-expression")
+            .build());
 
         this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isBadRequest());
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void createNullName() throws Exception {
+        String content = asJson(MapBuilder.builder()
+            .entry("expression", "test-expression")
+            .build());
+
+        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         this.mockMvc.perform(delete("/schedules/{id}", schedule.getId()))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(this.scheduleRepository.exists(schedule.getId())).isFalse();
     }
@@ -104,7 +104,7 @@ public class ScheduleControllerTest extends AbstractControllerTest {
     @Test
     public void deleteDoesNotExist() throws Exception {
         this.mockMvc.perform(delete("/schedules/{id}", Long.MAX_VALUE))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -113,10 +113,10 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         this.mockMvc.perform(get("/schedules").accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.page").exists())
-                .andExpect(jsonPath("$._embedded.schedules").value(hasSize(1)))
-                .andExpect(jsonPath("$._links.self").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.page").exists())
+            .andExpect(jsonPath("$._embedded.schedules").value(hasSize(1)))
+            .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
@@ -125,16 +125,16 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         this.mockMvc.perform(get("/schedules/{id}", schedule.getId()).accept(HAL_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.expression").value("test-expression"))
-                .andExpect(jsonPath("$.name").value("test-name"))
-                .andExpect(jsonPath("$._links.self").exists());
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.expression").value("test-expression"))
+            .andExpect(jsonPath("$.name").value("test-name"))
+            .andExpect(jsonPath("$._links.self").exists());
     }
 
     @Test
     public void readDoesNotExist() throws Exception {
         this.mockMvc.perform(get("/schedules/{id}", Long.MAX_VALUE).accept(HAL_JSON))
-                .andExpect(status().isNotFound());
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -143,15 +143,26 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "another-test-expression")
-                .entry("name", "another-test-name")
-                .build());
+            .entry("expression", "another-test-expression")
+            .entry("name", "another-test-name")
+            .build());
 
         this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(schedule.getExpression()).isEqualTo("another-test-expression");
         assertThat(schedule.getName()).isEqualTo("another-test-name");
+    }
+
+    @Test
+    public void updateDoesNotExist() throws Exception {
+        String content = asJson(MapBuilder.builder()
+            .entry("expression", "another-test-expression")
+            .entry("name", "another-test-name")
+            .build());
+
+        this.mockMvc.perform(patch("/schedules/{id}", Long.MAX_VALUE).contentType(APPLICATION_JSON).content(content))
+            .andExpect(status().isNotFound());
     }
 
     @Test
@@ -160,11 +171,11 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "another-test-expression")
-                .build());
+            .entry("expression", "another-test-expression")
+            .build());
 
         this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(schedule.getExpression()).isEqualTo("another-test-expression");
     }
@@ -175,24 +186,13 @@ public class ScheduleControllerTest extends AbstractControllerTest {
         this.scheduleRepository.saveAndFlush(schedule);
 
         String content = asJson(MapBuilder.builder()
-                .entry("name", "another-test-name")
-                .build());
+            .entry("name", "another-test-name")
+            .build());
 
         this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNoContent());
+            .andExpect(status().isNoContent());
 
         assertThat(schedule.getName()).isEqualTo("another-test-name");
-    }
-
-    @Test
-    public void updateDoesNotExist() throws Exception {
-        String content = asJson(MapBuilder.builder()
-                .entry("expression", "another-test-expression")
-                .entry("name", "another-test-name")
-                .build());
-
-        this.mockMvc.perform(patch("/schedules/{id}", Long.MAX_VALUE).contentType(APPLICATION_JSON).content(content))
-                .andExpect(status().isNotFound());
     }
 
 }

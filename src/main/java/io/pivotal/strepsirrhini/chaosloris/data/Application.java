@@ -29,9 +29,7 @@ import java.util.UUID;
 import static lombok.AccessLevel.PACKAGE;
 
 /**
- * An application that is a candidate for chaos
- * <p>
- * <p/><b>This class is not threadsafe</b>
+ * An application that is a candidate for chaos <p> <p/><b>This class is not threadsafe</b>
  */
 @Data
 @Entity
@@ -39,12 +37,12 @@ import static lombok.AccessLevel.PACKAGE;
 @NoArgsConstructor(access = PACKAGE)
 public class Application {
 
+    private UUID applicationId;
+
     @Id
     @GeneratedValue
     @JsonIgnore
-    private volatile Long id;
-
-    private volatile UUID applicationId;
+    private Long id;
 
     /**
      * Create a new instance

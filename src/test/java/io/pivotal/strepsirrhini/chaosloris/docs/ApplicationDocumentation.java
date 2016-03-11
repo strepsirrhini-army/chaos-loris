@@ -61,14 +61,14 @@ public class ApplicationDocumentation extends AbstractApiDocumentation {
         ConstrainedFields fields = new ConstrainedFields(ApplicationCreateInput.class);
 
         this.document.snippets(
-                requestFields(
-                        fields.withPath("applicationId").description("The Cloud Foundry application id")),
-                responseHeaders(
-                        headerWithName("Location").description("The URI of the newly created application")));
+            requestFields(
+                fields.withPath("applicationId").description("The Cloud Foundry application id")),
+            responseHeaders(
+                headerWithName("Location").description("The URI of the newly created application")));
 
         String content = asJson(MapBuilder.builder()
-                .entry("applicationId", UUID.randomUUID().toString())
-                .build());
+            .entry("applicationId", UUID.randomUUID().toString())
+            .build());
 
         this.mockMvc.perform(post("/applications").contentType(APPLICATION_JSON).content(content));
     }
@@ -79,8 +79,8 @@ public class ApplicationDocumentation extends AbstractApiDocumentation {
         this.applicationRepository.saveAndFlush(application);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The application's id")));
+            pathParameters(
+                parameterWithName("id").description("The application's id")));
 
         this.mockMvc.perform(delete("/applications/{id}", application.getId()));
     }
@@ -93,22 +93,22 @@ public class ApplicationDocumentation extends AbstractApiDocumentation {
         });
 
         this.document.snippets(
-                requestParameters(
-                        parameterWithName("page").description("Page to retrieve"),
-                        parameterWithName("size").description("Size of the page to retrieve")),
-                responseFields(
-                        fieldWithPath("page.number").description("The number of this page of results"),
-                        fieldWithPath("page.size").description("The size of this page of results"),
-                        fieldWithPath("page.totalPages").description("The total number of pages of results"),
-                        fieldWithPath("page.totalElements").description("The total number of results"),
-                        fieldWithPath("_embedded.applications").description("A collection of Applications as described in [Read an Application](#read-an-application)"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("first").optional().description("The first page of results"),
-                        linkWithRel("last").optional().description("The last page of results"),
-                        linkWithRel("next").optional().description("The next page of results"),
-                        linkWithRel("prev").optional().description("The previous page of results")));
+            requestParameters(
+                parameterWithName("page").description("Page to retrieve"),
+                parameterWithName("size").description("Size of the page to retrieve")),
+            responseFields(
+                fieldWithPath("page.number").description("The number of this page of results"),
+                fieldWithPath("page.size").description("The size of this page of results"),
+                fieldWithPath("page.totalPages").description("The total number of pages of results"),
+                fieldWithPath("page.totalElements").description("The total number of results"),
+                fieldWithPath("_embedded.applications").description("A collection of Applications as described in [Read an Application](#read-an-application)"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("first").optional().description("The first page of results"),
+                linkWithRel("last").optional().description("The last page of results"),
+                linkWithRel("next").optional().description("The next page of results"),
+                linkWithRel("prev").optional().description("The previous page of results")));
 
         this.mockMvc.perform(get("/applications" + query).accept(HAL_JSON));
     }
@@ -131,14 +131,14 @@ public class ApplicationDocumentation extends AbstractApiDocumentation {
         this.chaosRepository.saveAndFlush(chaos2);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The application's id")),
-                responseFields(
-                        fieldWithPath("applicationId").description("The Cloud Foundry application id"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("chaos").description("[Chaos](#chaoses) instances using this application")));
+            pathParameters(
+                parameterWithName("id").description("The application's id")),
+            responseFields(
+                fieldWithPath("applicationId").description("The Cloud Foundry application id"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("chaos").description("[Chaos](#chaoses) instances using this application")));
 
         this.mockMvc.perform(get("/applications/{id}", application.getId()).accept(HAL_JSON));
     }

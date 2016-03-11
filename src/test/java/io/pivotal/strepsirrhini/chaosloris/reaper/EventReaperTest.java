@@ -46,18 +46,13 @@ public class EventReaperTest extends AbstractIntegrationTest {
     @Autowired
     private ChaosRepository chaosRepository;
 
+    private EventReaper eventReaper;
+
     @Autowired
     private EventRepository eventRepository;
 
     @Autowired
     private ScheduleRepository scheduleRepository;
-
-    private EventReaper eventReaper;
-
-    @Before
-    public void setUp() throws Exception {
-        this.eventReaper = new EventReaper(this.eventRepository, Period.parse("P1D"));
-    }
 
     @Test
     public void doReap() {
@@ -81,10 +76,15 @@ public class EventReaperTest extends AbstractIntegrationTest {
         Event event3 = new Event(chaos, now.plus(3, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event3);
 
-        this.eventReaper.doReap().next().get();
+        this.eventReaper.doReap().get();
 
         List<Event> events = this.eventRepository.findAll();
         assertThat(events).containsExactly(event2, event3);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        this.eventReaper = new EventReaper(this.eventRepository, Period.parse("P1D"));
     }
 
 }

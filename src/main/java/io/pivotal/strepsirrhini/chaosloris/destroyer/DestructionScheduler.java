@@ -31,28 +31,29 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
-import reactor.rx.Stream;
-import reactor.rx.Streams;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
-import static reactor.rx.Streams.concat;
 
 @Component
 final class DestructionScheduler implements HealthIndicator, Lifecycle {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final AtomicBoolean running = new AtomicBoolean(false);
-
-    private final Map<Long, ScheduledFuture<?>> scheduled = new ConcurrentHashMap<>();
-
     private final DestroyerFactory destroyerFactory;
 
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
     private final ScheduleRepository scheduleRepository;
+
+    private final Map<Long, ScheduledFuture<?>> scheduled = new ConcurrentHashMap<>();
 
     private final TaskScheduler taskScheduler;
 
@@ -79,55 +80,79 @@ final class DestructionScheduler implements HealthIndicator, Lifecycle {
 
     @TransactionalEventListener
     public void scheduleCreated(ScheduleCreatedEvent event) {
-        start(event.getSchedule())
-                .consume();
+        start(event.getSchedule(), this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
+            .subscribe();
     }
 
     @TransactionalEventListener
     public void scheduleDeleted(ScheduleDeletedEvent event) {
-        stop(event.getId())
-                .consume();
+        stop(event.getId(), this.scheduled, this.logger)
+            .subscribe();
     }
 
     @TransactionalEventListener
     public void scheduleUpdated(ScheduleUpdatedEvent event) {
         Schedule schedule = event.getSchedule();
-        concat(stop(schedule.getId()), start(schedule))
-                .consume();
+        Flux
+            .concat(
+                stop(schedule.getId(), this.scheduled, this.logger),
+                start(schedule, this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
+            )
+            .subscribe();
     }
 
     @Override
     public void start() {
-        Streams.from(this.scheduleRepository.findAll())
-                .flatMap(this::start)
-                .observeComplete(v -> this.running.set(true))
-                .consume();
+        Flux
+            .fromIterable(this.scheduleRepository.findAll())
+            .flatMap(schedule -> start(schedule, this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger))
+            .doOnComplete(() -> this.running.set(true))  // TODO: Is this right?
+            .subscribe();
     }
 
     @Override
     public void stop() {
-        Streams.from(this.scheduled.keySet())
-                .flatMap(this::stop)
-                .observeComplete(v -> this.running.set(false))
-                .consume();
+        Flux
+            .fromIterable(this.scheduled.keySet())
+            .flatMap(id -> stop(id, this.scheduled, this.logger))
+            .doOnComplete(() -> this.running.set(false))  // TODO: Is this right?
+            .subscribe();
     }
 
-    private Stream<?> start(Schedule schedule) {
-        return Streams.just(schedule)
-                .observeStart(s -> this.logger.info("Start {}", schedule))
-                .map(s -> this.destroyerFactory.create(s.getId()))
-                .map(destroyer -> this.taskScheduler.schedule(destroyer, new CronTrigger(schedule.getExpression())))
-                .map(future -> this.scheduled.put(schedule.getId(), future))
-                .filter(future -> future != null)
-                .observe(future -> future.cancel(false));
+    private static Mono<ScheduledFuture<?>> putSchedule(Map<Long, ScheduledFuture<?>> scheduled, Long id, ScheduledFuture<?> future) {
+        return Optional
+            .ofNullable(scheduled.put(id, future))
+            .map((Function<ScheduledFuture<?>, Mono<ScheduledFuture<?>>>) Mono::just)
+            .orElse(Mono.empty());
     }
 
-    private Stream<?> stop(Long id) {
-        return Streams.just(id)
-                .map(this.scheduled::remove)
-                .filter(future -> future != null)
-                .observe(future -> future.cancel(false))
-                .observeComplete(s -> this.logger.debug("Stop Schedule(id={})", id));
+    private static Mono<ScheduledFuture<?>> removeSchedule(Map<Long, ScheduledFuture<?>> scheduled, Long id) {
+        return Optional
+            .ofNullable(scheduled.remove(id))
+            .map((Function<ScheduledFuture<?>, Mono<ScheduledFuture<?>>>) Mono::just)
+            .orElse(Mono.empty());
+    }
+
+    private static Mono<ScheduledFuture<?>> schedule(TaskScheduler taskScheduler, Destroyer destroyer, String expression) {
+        return Mono.just(taskScheduler.schedule(destroyer, new CronTrigger(expression)));
+    }
+
+    private static Mono<Boolean> start(Schedule schedule, DestroyerFactory destroyerFactory, TaskScheduler taskScheduler, Map<Long, ScheduledFuture<?>> scheduled, Logger logger) {
+        return Mono
+            .just(schedule)
+            .map(s -> destroyerFactory.create(s.getId()))
+            .then(destroyer -> schedule(taskScheduler, destroyer, schedule.getExpression()))
+            .then(future -> putSchedule(scheduled, schedule.getId(), future))
+            .then(previous -> Mono.just(previous.cancel(false)))
+            .doOnSubscribe(s -> logger.info("Start {}", schedule));
+    }
+
+    private static Mono<Boolean> stop(Long id, Map<Long, ScheduledFuture<?>> scheduled, Logger logger) {
+        return Mono
+            .just(id)
+            .then(i -> removeSchedule(scheduled, i))
+            .then(previous -> Mono.just(previous.cancel(false)))
+            .doOnSuccess(s -> logger.debug("Stop Schedule(id={})", id));
     }
 
 }

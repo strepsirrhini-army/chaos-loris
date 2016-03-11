@@ -18,15 +18,14 @@ package io.pivotal.strepsirrhini.chaosloris.destroyer;
 
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import org.cloudfoundry.client.CloudFoundryClient;
-import org.cloudfoundry.client.v2.applications.AbstractApplicationEntity;
 import org.cloudfoundry.client.v2.applications.SummaryApplicationRequest;
+import org.cloudfoundry.client.v2.applications.SummaryApplicationResponse;
 import org.cloudfoundry.client.v2.applications.TerminateApplicationInstanceRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import reactor.rx.Stream;
-import reactor.rx.Streams;
+import reactor.core.publisher.Mono;
 
 @Component
 final class CloudFoundryPlatform implements Platform {
@@ -41,26 +40,36 @@ final class CloudFoundryPlatform implements Platform {
     }
 
     @Override
-    public Stream<Integer> getInstanceCount(Application application) {
-        SummaryApplicationRequest request = SummaryApplicationRequest.builder()
-                .id(application.getApplicationId().toString())
-                .build();
-
-        return Streams.wrap(this.cloudFoundryClient.applicationsV2().summary(request))
-                .map(AbstractApplicationEntity::getInstances)
-                .observe(instanceCount -> this.logger.debug("{} has {} instances", application, instanceCount));
+    public Mono<Integer> getInstanceCount(Application application) {
+        return getInstances(this.cloudFoundryClient, application.getApplicationId().toString())
+            .doOnSuccess(instanceCount -> this.logger.debug("{} has {} instances", application, instanceCount));
     }
 
     @Override
-    public Stream<Void> terminateInstance(Application application, Integer instance) {
-        TerminateApplicationInstanceRequest request = TerminateApplicationInstanceRequest.builder()
-                .id(application.getApplicationId().toString())
-                .index(instance.toString())
-                .build();
+    public Mono<Void> terminateInstance(Application application, Integer index) {
+        return requestTerminateInstance(this.cloudFoundryClient, application.getApplicationId().toString(), index.toString())
+            .doOnSubscribe(s -> this.logger.info("Terminate {}/{}", application, index))
+            .doOnSuccess(v -> this.logger.debug("Terminated {}/{}", application, index));
+    }
 
-        return Streams.wrap(this.cloudFoundryClient.applicationsV2().terminateInstance(request))
-                .observeStart(s -> this.logger.info("Terminate {}/{}", application, instance))
-                .observeComplete(v -> this.logger.debug("Terminated {}/{}", application, instance));
+    private static Mono<SummaryApplicationResponse> requestApplicationSummary(CloudFoundryClient cloudFoundryClient, String applicationId) {
+        return cloudFoundryClient.applicationsV2()
+            .summary(SummaryApplicationRequest.builder()
+                .applicationId(applicationId)
+                .build());
+    }
+
+    private static Mono<Void> requestTerminateInstance(CloudFoundryClient cloudFoundryClient, String applicationId, String index) {
+        return cloudFoundryClient.applicationsV2()
+            .terminateInstance(TerminateApplicationInstanceRequest.builder()
+                .applicationId(applicationId)
+                .index(index)
+                .build());
+    }
+
+    private Mono<Integer> getInstances(CloudFoundryClient cloudFoundryClient, String applicationId) {
+        return requestApplicationSummary(cloudFoundryClient, applicationId)
+            .map(SummaryApplicationResponse::getInstances);
     }
 
 }

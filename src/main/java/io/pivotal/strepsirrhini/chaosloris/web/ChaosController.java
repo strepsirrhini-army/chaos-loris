@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,15 +75,15 @@ class ChaosController {
     @Transactional
     @RequestMapping(method = POST, value = "", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity create(@Valid @RequestBody ChaosCreateInput input) {
-        Application application = getApplication(input.getApplication());
-        Schedule schedule = getSchedule(input.getSchedule());
+        Application application = getApplication(input.getApplication(), this.applicationRepository);
+        Schedule schedule = getSchedule(input.getSchedule(), this.scheduleRepository);
 
         Chaos chaos = new Chaos(application, input.getProbability(), schedule);
         this.chaosRepository.saveAndFlush(chaos);
 
         return ResponseEntity
-                .created(linkTo(methodOn(ChaosController.class).read(chaos.getId())).toUri())
-                .build();
+            .created(linkTo(methodOn(ChaosController.class).read(chaos.getId())).toUri())
+            .build();
     }
 
     @Transactional
@@ -111,27 +112,26 @@ class ChaosController {
     public ResponseEntity update(@PathVariable Long id, @Valid @RequestBody ChaosUpdateInput input) {
         Chaos chaos = this.chaosRepository.getOne(id);
 
-        if (input.getProbability() != null) {
-            chaos.setProbability(input.getProbability());
-        }
+        Optional.ofNullable(input.getProbability())
+            .ifPresent(chaos::setProbability);
 
         this.chaosRepository.save(chaos);
         return ResponseEntity.noContent().build();
     }
 
-    private Application getApplication(URI uri) {
+    private static Application getApplication(URI uri, ApplicationRepository applicationRepository) {
         Matcher matcher = APPLICATION.matcher(uri.toASCIIString());
         if (matcher.find()) {
-            return this.applicationRepository.getOne(Long.valueOf(matcher.group(1)));
+            return applicationRepository.getOne(Long.valueOf(matcher.group(1)));
         } else {
             throw new IllegalArgumentException();
         }
     }
 
-    private Schedule getSchedule(URI uri) {
+    private static Schedule getSchedule(URI uri, ScheduleRepository scheduleRepository) {
         Matcher matcher = SCHEDULE.matcher(uri.toASCIIString());
         if (matcher.find()) {
-            return this.scheduleRepository.getOne(Long.valueOf(matcher.group(1)));
+            return scheduleRepository.getOne(Long.valueOf(matcher.group(1)));
         } else {
             throw new IllegalArgumentException();
         }

@@ -45,8 +45,8 @@ final class ChaosResourceAssembler extends ResourceAssemblerSupport<Chaos, Chaos
         resource.add(linkTo(methodOn(ScheduleController.class).read(chaos.getSchedule().getId())).withRel("schedule"));
 
         this.eventRepository.findByChaos(chaos).stream()
-                .map(event -> linkTo(methodOn(EventController.class).read(event.getId())).withRel("event"))
-                .forEach(resource::add);
+            .map(event -> linkTo(methodOn(EventController.class).read(event.getId())).withRel("event"))
+            .forEach(resource::add);
 
         return resource;
     }

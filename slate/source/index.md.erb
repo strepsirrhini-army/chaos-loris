@@ -41,7 +41,7 @@ Whenever an error response (status code >= `400`) is returned, the body will con
 <%= ERB.new(File.read("../target/generated-snippets/error/response-fields.md")).result(binding) %>
 
 ## Hypermedia
-Chaos Lemur Notes uses hypermedia and resources include links to other resources in their responses. Responses are in [Hypertext Application Language (HAL)](http://stateless.co/hal_specification.html format).  Links can be found beneath the `_links` key. Users of the API should not create URIs themselves, instead they should use the above-described links to navigate
+Chaos Loris Notes uses hypermedia and resources include links to other resources in their responses. Responses are in [Hypertext Application Language (HAL)](http://stateless.co/hal_specification.html format).  Links can be found beneath the `_links` key. Users of the API should not create URIs themselves, instead they should use the above-described links to navigate
 
 # Applications
 Applications are entites that encapsulate the id of a Cloud Foundry application.  Applications can be created, delete, listed, and read.

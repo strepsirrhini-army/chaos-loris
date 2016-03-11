@@ -25,8 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = {ChaosLemur.class, TestConfiguration.class})
+@SpringApplicationConfiguration(classes = {ChaosLoris.class, TestConfiguration.class})
 @Transactional
 @WebAppConfiguration
 public abstract class AbstractIntegrationTest {
+
 }

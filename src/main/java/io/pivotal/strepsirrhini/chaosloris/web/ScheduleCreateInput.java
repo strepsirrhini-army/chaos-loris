@@ -22,9 +22,7 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- * Input object for creating a {@link Schedule}
- * <p>
- * <b>This class is not threadsafe</b>
+ * Input object for creating a {@link Schedule} <p> <b>This class is not threadsafe</b>
  */
 @Data
 public final class ScheduleCreateInput {

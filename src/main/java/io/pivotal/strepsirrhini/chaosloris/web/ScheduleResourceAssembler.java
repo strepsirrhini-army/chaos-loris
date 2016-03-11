@@ -42,8 +42,8 @@ final class ScheduleResourceAssembler extends ResourceAssemblerSupport<Schedule,
         ScheduleResource resource = createResourceWithId(schedule.getId(), schedule);
 
         this.chaosRepository.findBySchedule(schedule).stream()
-                .map(chaos -> linkTo(methodOn(ChaosController.class).read(chaos.getId())).withRel("chaos"))
-                .forEach(resource::add);
+            .map(chaos -> linkTo(methodOn(ChaosController.class).read(chaos.getId())).withRel("chaos"))
+            .forEach(resource::add);
 
         return resource;
     }

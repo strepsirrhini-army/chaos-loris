@@ -64,16 +64,16 @@ public class ScheduleDocumentation extends AbstractApiDocumentation {
         ConstrainedFields fields = new ConstrainedFields(ScheduleCreateInput.class);
 
         this.document.snippets(
-                requestFields(
-                        fields.withPath("expression").description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
-                        fields.withPath("name").description("The user-readable name of the schedule")),
-                responseHeaders(
-                        headerWithName("Location").description("The URI of the newly created schedule")));
+            requestFields(
+                fields.withPath("expression").description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
+                fields.withPath("name").description("The user-readable name of the schedule")),
+            responseHeaders(
+                headerWithName("Location").description("The URI of the newly created schedule")));
 
         String content = asJson(MapBuilder.builder()
-                .entry("expression", "0 0 * * * *")
-                .entry("name", "hourly")
-                .build());
+            .entry("expression", "0 0 * * * *")
+            .entry("name", "hourly")
+            .build());
 
         this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content));
     }
@@ -84,8 +84,8 @@ public class ScheduleDocumentation extends AbstractApiDocumentation {
         this.scheduleRepository.saveAndFlush(schedule);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The schedule's id")));
+            pathParameters(
+                parameterWithName("id").description("The schedule's id")));
 
         this.mockMvc.perform(delete("/schedules/{id}", schedule.getId()));
     }
@@ -98,22 +98,22 @@ public class ScheduleDocumentation extends AbstractApiDocumentation {
         });
 
         this.document.snippets(
-                requestParameters(
-                        parameterWithName("page").description("Page to retrieve"),
-                        parameterWithName("size").description("Size of the page to retrieve")),
-                responseFields(
-                        fieldWithPath("page.number").description("The number of this page of results"),
-                        fieldWithPath("page.size").description("The size of this page of results"),
-                        fieldWithPath("page.totalPages").description("The total number of pages of results"),
-                        fieldWithPath("page.totalElements").description("The total number of results"),
-                        fieldWithPath("_embedded.schedules").description("A collection of Schedules as described in [Read a Schedule](#read-a-schedule)"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("first").optional().description("The first page of results"),
-                        linkWithRel("last").optional().description("The last page of results"),
-                        linkWithRel("next").optional().description("The next page of results"),
-                        linkWithRel("prev").optional().description("The previous page of results")));
+            requestParameters(
+                parameterWithName("page").description("Page to retrieve"),
+                parameterWithName("size").description("Size of the page to retrieve")),
+            responseFields(
+                fieldWithPath("page.number").description("The number of this page of results"),
+                fieldWithPath("page.size").description("The size of this page of results"),
+                fieldWithPath("page.totalPages").description("The total number of pages of results"),
+                fieldWithPath("page.totalElements").description("The total number of results"),
+                fieldWithPath("_embedded.schedules").description("A collection of Schedules as described in [Read a Schedule](#read-a-schedule)"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("first").optional().description("The first page of results"),
+                linkWithRel("last").optional().description("The last page of results"),
+                linkWithRel("next").optional().description("The next page of results"),
+                linkWithRel("prev").optional().description("The previous page of results")));
 
         this.mockMvc.perform(get("/schedules" + query).accept(HAL_JSON));
     }
@@ -136,15 +136,15 @@ public class ScheduleDocumentation extends AbstractApiDocumentation {
         this.chaosRepository.saveAndFlush(chaos2);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The schedule's id")),
-                responseFields(
-                        fieldWithPath("expression").description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
-                        fieldWithPath("name").description("The user-readable name of the schedule"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("chaos").description("[Chaos](#chaoses) instances using this schedule")));
+            pathParameters(
+                parameterWithName("id").description("The schedule's id")),
+            responseFields(
+                fieldWithPath("expression").description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
+                fieldWithPath("name").description("The user-readable name of the schedule"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("chaos").description("[Chaos](#chaoses) instances using this schedule")));
 
         this.mockMvc.perform(get("/schedules/{id}", schedule.getId()).accept(HAL_JSON));
     }
@@ -157,15 +157,15 @@ public class ScheduleDocumentation extends AbstractApiDocumentation {
         ConstrainedFields fields = new ConstrainedFields(ScheduleUpdateInput.class);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The schedule's id")),
-                requestFields(
-                        fields.withPath("expression").optional().type(STRING).description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
-                        fields.withPath("name").optional().type(STRING).description("The user-readable name of the schedule")));
+            pathParameters(
+                parameterWithName("id").description("The schedule's id")),
+            requestFields(
+                fields.withPath("expression").optional().type(STRING).description("The [CRON expression](http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/support/CronSequenceGenerator.html) of the schedule"),
+                fields.withPath("name").optional().type(STRING).description("The user-readable name of the schedule")));
 
         String content = asJson(MapBuilder.builder()
-                .entry("name", "default")
-                .build());
+            .entry("name", "default")
+            .build());
 
         this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content));
     }

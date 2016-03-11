@@ -25,8 +25,8 @@ public final class EventTest {
     @Test
     public void getTerminatedInstanceCount() {
         Event event = Event.builder()
-                .terminatedInstance(1)
-                .build();
+            .terminatedInstance(1)
+            .build();
 
         assertThat(event.getTerminatedInstanceCount()).isEqualTo(1);
     }

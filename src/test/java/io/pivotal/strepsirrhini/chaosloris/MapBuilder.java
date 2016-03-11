@@ -22,10 +22,10 @@ import lombok.Singular;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class MapBuilder extends HashMap {
+public final class MapBuilder extends HashMap<String, Object> {
 
     @Builder
-    MapBuilder(@Singular Map<Object, Object> entries) {
+    MapBuilder(@Singular Map<String, Object> entries) {
         super(entries);
     }
 

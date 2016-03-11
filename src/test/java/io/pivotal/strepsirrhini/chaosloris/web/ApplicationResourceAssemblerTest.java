@@ -39,10 +39,10 @@ public class ApplicationResourceAssemblerTest extends AbstractIntegrationTest {
     private ChaosRepository chaosRepository;
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private ApplicationResourceAssembler resourceAssembler;
 
     @Autowired
-    private ApplicationResourceAssembler resourceAssembler;
+    private ScheduleRepository scheduleRepository;
 
     @Test
     public void toResource() {

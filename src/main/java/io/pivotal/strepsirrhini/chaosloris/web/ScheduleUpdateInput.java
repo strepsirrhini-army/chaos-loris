@@ -20,9 +20,7 @@ import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
 import lombok.Data;
 
 /**
- * Input object for updating a {@link Schedule}
- * <p>
- * <b>This class is not threadsafe</b>
+ * Input object for updating a {@link Schedule} <p> <b>This class is not threadsafe</b>
  */
 @Data
 public final class ScheduleUpdateInput {

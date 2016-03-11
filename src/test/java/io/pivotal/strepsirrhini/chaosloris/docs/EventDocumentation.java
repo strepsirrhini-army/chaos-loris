@@ -71,8 +71,8 @@ public class EventDocumentation extends AbstractApiDocumentation {
         this.eventRepository.saveAndFlush(event);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The event's id")));
+            pathParameters(
+                parameterWithName("id").description("The event's id")));
 
         this.mockMvc.perform(delete("/events/{id}", event.getId()));
     }
@@ -94,22 +94,22 @@ public class EventDocumentation extends AbstractApiDocumentation {
         });
 
         this.document.snippets(
-                requestParameters(
-                        parameterWithName("page").description("Page to retrieve"),
-                        parameterWithName("size").description("Size of the page to retrieve")),
-                responseFields(
-                        fieldWithPath("page.number").description("The number of this page of results"),
-                        fieldWithPath("page.size").description("The size of this page of results"),
-                        fieldWithPath("page.totalPages").description("The total number of pages of results"),
-                        fieldWithPath("page.totalElements").description("The total number of results"),
-                        fieldWithPath("_embedded.events").description("A collection of Events as described in [Read an Event](#read-an-event)"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("first").optional().description("The first page of results"),
-                        linkWithRel("last").optional().description("The last page of results"),
-                        linkWithRel("next").optional().description("The next page of results"),
-                        linkWithRel("prev").optional().description("The previous page of results")));
+            requestParameters(
+                parameterWithName("page").description("Page to retrieve"),
+                parameterWithName("size").description("Size of the page to retrieve")),
+            responseFields(
+                fieldWithPath("page.number").description("The number of this page of results"),
+                fieldWithPath("page.size").description("The size of this page of results"),
+                fieldWithPath("page.totalPages").description("The total number of pages of results"),
+                fieldWithPath("page.totalElements").description("The total number of results"),
+                fieldWithPath("_embedded.events").description("A collection of Events as described in [Read an Event](#read-an-event)"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("first").optional().description("The first page of results"),
+                linkWithRel("last").optional().description("The last page of results"),
+                linkWithRel("next").optional().description("The next page of results"),
+                linkWithRel("prev").optional().description("The previous page of results")));
 
         this.mockMvc.perform(get("/events" + query).accept(HAL_JSON));
     }
@@ -129,17 +129,17 @@ public class EventDocumentation extends AbstractApiDocumentation {
         this.eventRepository.saveAndFlush(event);
 
         this.document.snippets(
-                pathParameters(
-                        parameterWithName("id").description("The event's id")),
-                responseFields(
-                        fieldWithPath("executedAt").description("An ISO-8601 timestamp for when the event occurred"),
-                        fieldWithPath("terminatedInstances").description("The instances terminated during the event"),
-                        fieldWithPath("totalInstanceCount").description("The total number of instances that were candidates for termination during the event"),
-                        fieldWithPath("terminatedInstanceCount").description("The total number of instances terminated during the event"),
-                        fieldWithPath("_links").ignored()),
-                links(
-                        linkWithRel("self").ignored(),
-                        linkWithRel("chaos").description("The [Chaos](#chaoses) that triggered the event")));
+            pathParameters(
+                parameterWithName("id").description("The event's id")),
+            responseFields(
+                fieldWithPath("executedAt").description("An ISO-8601 timestamp for when the event occurred"),
+                fieldWithPath("terminatedInstances").description("The instances terminated during the event"),
+                fieldWithPath("totalInstanceCount").description("The total number of instances that were candidates for termination during the event"),
+                fieldWithPath("terminatedInstanceCount").description("The total number of instances terminated during the event"),
+                fieldWithPath("_links").ignored()),
+            links(
+                linkWithRel("self").ignored(),
+                linkWithRel("chaos").description("The [Chaos](#chaoses) that triggered the event")));
 
         this.mockMvc.perform(get("/events/{id}", event.getId()).accept(HAL_JSON));
     }
