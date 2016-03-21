@@ -13,4 +13,5 @@ run:
   path: chaos-loris/ci/unit-test.sh
 
 params:
+  SPRING_DATASOURCE_PASSWORD: ''
   SPRING_DATASOURCE_USERNAME: root
