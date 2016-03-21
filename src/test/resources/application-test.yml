@@ -17,7 +17,7 @@ spring:
   main:
     banner-mode: off
   datasource:
-    url: jdbc:mysql://localhost/test
+    url: jdbc:mysql://localhost/chaos-loris
     username: chaos-loris
     password: chaos-loris
     driver-class-name: org.mariadb.jdbc.Driver
