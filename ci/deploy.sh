@@ -3,4 +3,4 @@
 set -e
 
 cd chaos-loris
-./mvnw -q -Dmaven.test.skip=true deploy
+./mvnw -q deploy
