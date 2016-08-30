@@ -17,6 +17,6 @@ RUN apk add --update \
     ruby-io-console \
  && rm -rf /var/cache/apk/*
 
-RUN gem install nokogiri --version 1.6.7.2 --no-rdoc --no-ri
+RUN gem install nokogiri --version 1.6.7.2 --no-rdoc --no-ri -- --use-system-libraries
 
 RUN mysql_install_db --user=mysql --rpm
