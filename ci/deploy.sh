@@ -8,3 +8,5 @@ mysqladmin create chaos-loris
 
 cd chaos-loris
 ./mvnw -q deploy
+
+mysqladmin shutdown
