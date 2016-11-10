@@ -16,7 +16,6 @@
 
 package io.pivotal.strepsirrhini.chaosloris.reaper;
 
-import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
@@ -25,12 +24,19 @@ import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
 import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import org.cloudfoundry.client.CloudFoundryClient;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
-import java.time.Period;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -38,13 +44,19 @@ import java.util.UUID;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EventReaperTest extends AbstractIntegrationTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+@Transactional
+public class EventReaperTest {
 
     @Autowired
     private ApplicationRepository applicationRepository;
 
     @Autowired
     private ChaosRepository chaosRepository;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
 
     private EventReaper eventReaper;
 
@@ -76,7 +88,11 @@ public class EventReaperTest extends AbstractIntegrationTest {
         Event event3 = new Event(chaos, now.plus(3, DAYS), Collections.emptyList(), Integer.MIN_VALUE);
         this.eventRepository.saveAndFlush(event3);
 
-        this.eventReaper.doReap().get();
+        this.eventReaper.doReap()
+            .as(StepVerifier::create)
+            .expectNext(1L)
+            .expectComplete()
+            .verify();
 
         List<Event> events = this.eventRepository.findAll();
         assertThat(events).containsExactly(event2, event3);
@@ -84,7 +100,7 @@ public class EventReaperTest extends AbstractIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        this.eventReaper = new EventReaper(this.eventRepository, Period.parse("P1D"));
+        this.eventReaper = new EventReaper(this.eventRepository, "P1D");
     }
 
 }

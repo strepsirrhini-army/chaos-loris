@@ -16,24 +16,41 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.MapBuilder;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
 import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
 import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import org.cloudfoundry.client.CloudFoundryClient;
+import org.cloudfoundry.util.FluentMap;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Collections;
 import java.util.UUID;
 
-import static io.pivotal.strepsirrhini.chaosloris.MatchesPattern.matchesPattern;
-import static org.assertj.core.api.Assertions.assertThat;
+import static io.pivotal.strepsirrhini.chaosloris.JsonTestUtilities.asJson;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -43,215 +60,272 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ChaosControllerTest extends AbstractControllerTest {
+@RunWith(SpringRunner.class)
+@WebMvcTest(ChaosController.class)
+public class ChaosControllerTest {
 
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ApplicationRepository applicationRepository;
 
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ChaosRepository chaosRepository;
 
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private EventRepository eventRepository;
+
     @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ScheduleRepository scheduleRepository;
 
     @Test
     public void create() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 0.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        when(this.chaosRepository.saveAndFlush(new Chaos(application, 0.1, schedule)))
+            .then(invocation -> {
+                Chaos chaos = invocation.getArgumentAt(0, Chaos.class);
+                chaos.setId(3L);
+                return chaos;
+            });
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 0.1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isCreated())
-            .andExpect(header().string("Location", matchesPattern(".*/chaoses/[\\d]+")));
-
-        assertThat(this.chaosRepository.count()).isEqualTo(1);
+            .andExpect(header().string("Location", "http://localhost/chaoses/3"));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void createDuplicateApplicationAndSchedule() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 0.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        when(this.chaosRepository.saveAndFlush(new Chaos(application, 0.1, schedule)))
+            .thenThrow(DataIntegrityViolationException.class);
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 0.1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullApplication() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 0.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
-
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("probability", 0.1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullProbability() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullSchedule() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 0.1)
-            .build());
-
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 0.1)
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createProbabilityGreaterThanOne() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 1.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 1.1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createProbabilityLessThanZero() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", -0.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", -0.1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createProbabilityOne() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-            .andExpect(status().isCreated());
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        when(this.chaosRepository.saveAndFlush(new Chaos(application, 1.0, schedule)))
+            .then(invocation -> {
+                Chaos chaos = invocation.getArgumentAt(0, Chaos.class);
+                chaos.setId(1L);
+                return chaos;
+            });
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 1)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
+            .andExpect(status().isCreated())
+            .andExpect(header().string("Location", "http://localhost/chaoses/1"));
     }
 
     @Test
     public void createProbabilityZero() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 0)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content))
-            .andExpect(status().isCreated());
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        when(this.chaosRepository.saveAndFlush(new Chaos(application, 0.0, schedule)))
+            .then(invocation -> {
+                Chaos chaos = invocation.getArgumentAt(0, Chaos.class);
+                chaos.setId(1L);
+                return chaos;
+            });
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "http://localhost/applications/1")
+                .entry("probability", 0)
+                .entry("schedule", "http://localhost/schedules/2")
+                .build())))
+            .andExpect(status().isCreated())
+            .andExpect(header().string("Location", "http://localhost/chaoses/1"));
     }
 
     @Test
     public void del() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
-
-        this.mockMvc.perform(delete("/chaoses/{id}", chaos.getId()))
+        this.mockMvc.perform(delete("/chaoses/{id}", 1L))
             .andExpect(status().isNoContent());
 
-        assertThat(this.chaosRepository.exists(chaos.getId())).isFalse();
+        verify(this.chaosRepository).delete(1L);
     }
 
     @Test
     public void deleteDoesNotExist() throws Exception {
-        this.mockMvc.perform(delete("/chaoses/{id}", Long.MAX_VALUE))
+        doThrow(EmptyResultDataAccessException.class)
+            .when(this.chaosRepository).delete(1L);
+
+        this.mockMvc.perform(delete("/chaoses/{id}", 1L))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void list() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
+
+        when(this.chaosRepository.findAll(new PageRequest(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(chaos)));
 
         this.mockMvc.perform(get("/chaoses").accept(HAL_JSON))
             .andExpect(status().isOk())
@@ -263,13 +337,16 @@ public class ChaosControllerTest extends AbstractControllerTest {
     @Test
     public void read() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
+
+        when(this.chaosRepository.getOne(chaos.getId()))
+            .thenReturn(chaos);
 
         this.mockMvc.perform(get("/chaoses/{id}", chaos.getId()).accept(HAL_JSON))
             .andExpect(status().isOk())
@@ -279,117 +356,146 @@ public class ChaosControllerTest extends AbstractControllerTest {
             .andExpect(jsonPath("$._links.schedule").exists());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void readDoesNotExist() throws Exception {
-        this.mockMvc.perform(get("/chaoses/{id}", Long.MAX_VALUE).accept(HAL_JSON))
+        when(this.chaosRepository.getOne(1L))
+            .thenThrow(EntityNotFoundException.class);
+
+        this.mockMvc.perform(get("/chaoses/{id}", 1L).accept(HAL_JSON))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void update() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos1 = new Chaos(application, 0.1, schedule);
+        chaos1.setId(3L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 0.5)
-            .build());
+        when(this.chaosRepository.getOne(chaos1.getId()))
+            .thenReturn(chaos1);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 0.5))))
             .andExpect(status().isNoContent());
 
-        assertThat(chaos.getProbability()).isEqualTo(0.5);
+        Chaos chaos2 = new Chaos(application, 0.5, schedule);
+        chaos2.setId(chaos1.getId());
+
+        verify(this.chaosRepository).save(chaos2);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void updateDoesNotExist() throws Exception {
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 0.5)
-            .build());
+        when(this.chaosRepository.getOne(1L))
+            .thenThrow(EntityNotFoundException.class);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", Long.MAX_VALUE).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", 1L).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 0.5))))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void updateProbabilityGreaterThanOne() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 1.1)
-            .build());
+        when(this.chaosRepository.getOne(chaos.getId()))
+            .thenReturn(chaos);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 1.1))))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void updateProbabilityLessThanZero() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", -0.1)
-            .build());
+        when(this.chaosRepository.getOne(chaos.getId()))
+            .thenReturn(chaos);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", -0.1))))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void updateProbabilityOne() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos1 = new Chaos(application, 0.1, schedule);
+        chaos1.setId(3L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 1)
-            .build());
+        when(this.chaosRepository.getOne(chaos1.getId()))
+            .thenReturn(chaos1);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 1))))
             .andExpect(status().isNoContent());
+
+        Chaos chaos2 = new Chaos(application, 1.0, schedule);
+        chaos2.setId(chaos1.getId());
+
+        verify(this.chaosRepository).save(chaos2);
     }
 
     @Test
     public void updateProbabilityZero() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos1 = new Chaos(application, 0.1, schedule);
+        chaos1.setId(3L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 0)
-            .build());
+        when(this.chaosRepository.getOne(chaos1.getId()))
+            .thenReturn(chaos1);
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 0))))
             .andExpect(status().isNoContent());
+
+        Chaos chaos2 = new Chaos(application, 0.0, schedule);
+        chaos2.setId(chaos1.getId());
+
+        verify(this.chaosRepository).save(chaos2);
+    }
+
+    @EnableSpringDataWebSupport
+    @TestConfiguration
+    static class AdditionalConfiguration {
+
+        @Bean
+        ChaosResourceAssembler chaosResourceAssembler(EventRepository eventRepository) {
+            return new ChaosResourceAssembler(eventRepository);
+        }
+
     }
 
 }

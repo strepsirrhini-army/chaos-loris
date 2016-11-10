@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ChaosLoris" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="io.pivotal.strepsirrhini.chaosloris.ChaosLoris" />
+    <option name="ALTERNATIVE_JRE_PATH" />
+    <module name="chaos-loris" />
+    <envs>
+      <env name="SPRING_PROFILES_ACTIVE" value="local" />
+      <env name="LORIS_CLOUDFOUNDRY_HOST" value="api.local.pcfdev.io" />
+      <env name="LORIS_CLOUDFOUNDRY_USERNAME" value="admin" />
+      <env name="LORIS_CLOUDFOUNDRY_PASSWORD" value="admin" />
+      <env name="LORIS_CLOUDFOUNDRY_SKIPSSLVALIDATION" value="true" />
+      <env name="SECURITY_USER_PASSWORD" value="2eb2a376-4145-4106-a194-1a825fce6e3f" />
+    </envs>
+    <method />
+  </configuration>
+</component>

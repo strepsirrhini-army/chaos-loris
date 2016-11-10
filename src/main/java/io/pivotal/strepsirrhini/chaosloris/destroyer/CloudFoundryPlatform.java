@@ -52,6 +52,11 @@ final class CloudFoundryPlatform implements Platform {
             .doOnSuccess(v -> this.logger.debug("Terminated {}/{}", application, index));
     }
 
+    private static Mono<Integer> getInstances(CloudFoundryClient cloudFoundryClient, String applicationId) {
+        return requestApplicationSummary(cloudFoundryClient, applicationId)
+            .map(SummaryApplicationResponse::getInstances);
+    }
+
     private static Mono<SummaryApplicationResponse> requestApplicationSummary(CloudFoundryClient cloudFoundryClient, String applicationId) {
         return cloudFoundryClient.applicationsV2()
             .summary(SummaryApplicationRequest.builder()
@@ -65,11 +70,6 @@ final class CloudFoundryPlatform implements Platform {
                 .applicationId(applicationId)
                 .index(index)
                 .build());
-    }
-
-    private Mono<Integer> getInstances(CloudFoundryClient cloudFoundryClient, String applicationId) {
-        return requestApplicationSummary(cloudFoundryClient, applicationId)
-            .map(SummaryApplicationResponse::getInstances);
     }
 
 }

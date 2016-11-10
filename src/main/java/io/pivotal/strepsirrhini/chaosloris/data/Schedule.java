@@ -17,32 +17,29 @@
 package io.pivotal.strepsirrhini.chaosloris.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-
-import static lombok.AccessLevel.PACKAGE;
+import java.util.Objects;
 
 /**
  * A schedule for driving chaos <p> <b>This class is not threadsafe</b>
  */
-@Data
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@NoArgsConstructor(access = PACKAGE)
 public class Schedule {
 
+    @Column(nullable = false)
     private String expression;
 
-    @Id
+    @Column(nullable = false)
     @GeneratedValue
+    @Id
     @JsonIgnore
     private Long id;
 
+    @Column(nullable = false, unique = true)
     private String name;
 
     /**
@@ -54,6 +51,91 @@ public class Schedule {
     public Schedule(String expression, String name) {
         this.name = name;
         this.expression = expression;
+    }
+
+    Schedule() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Schedule schedule = (Schedule) o;
+        return Objects.equals(this.expression, schedule.expression) &&
+            Objects.equals(this.id, schedule.id) &&
+            Objects.equals(this.name, schedule.name);
+    }
+
+    /**
+     * Returns the expression
+     *
+     * @return the expression
+     */
+    public String getExpression() {
+        return this.expression;
+    }
+
+    /**
+     * Sets the expression
+     *
+     * @param expression the expression
+     */
+    public void setExpression(String expression) {
+        this.expression = expression;
+    }
+
+    /**
+     * Returns the id
+     *
+     * @return the id
+     */
+    public Long getId() {
+        return this.id;
+    }
+
+    /**
+     * Sets the id
+     *
+     * @param id the id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * Returns the name
+     *
+     * @return the name
+     */
+    public String getName() {
+        return this.name;
+    }
+
+    /**
+     * Sets the name
+     *
+     * @param name the name
+     */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.expression, this.id, this.name);
+    }
+
+    @Override
+    public String toString() {
+        return "Schedule{" +
+            "expression='" + this.expression + '\'' +
+            ", id=" + this.id +
+            ", name='" + this.name + '\'' +
+            '}';
     }
 
 }

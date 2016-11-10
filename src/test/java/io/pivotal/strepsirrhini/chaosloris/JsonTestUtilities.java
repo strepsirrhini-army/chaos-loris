@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@
 
 package io.pivotal.strepsirrhini.chaosloris;
 
-import lombok.Builder;
-import lombok.Singular;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
-import java.util.Map;
+public final class JsonTestUtilities {
 
-public final class MapBuilder extends HashMap<String, Object> {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    @Builder
-    MapBuilder(@Singular Map<String, Object> entries) {
-        super(entries);
+    public static <T> String asJson(T entity) throws JsonProcessingException {
+        return OBJECT_MAPPER.writeValueAsString(entity);
     }
 
 }

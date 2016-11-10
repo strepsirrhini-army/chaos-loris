@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="1661299587">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
     <data-source source="LOCAL" name="H2 - Chaos Loris" uuid="ac4c09c7-e3e7-4d2b-a751-36f836a94036">
       <driver-ref>h2.unified</driver-ref>
       <synchronize>true</synchronize>

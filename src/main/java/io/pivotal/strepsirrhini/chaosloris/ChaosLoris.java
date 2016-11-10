@@ -17,18 +17,17 @@
 package io.pivotal.strepsirrhini.chaosloris;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.cloudfoundry.spring.client.SpringCloudFoundryClient;
+import org.cloudfoundry.reactor.DefaultConnectionContext;
+import org.cloudfoundry.reactor.client.ReactorCloudFoundryClient;
+import org.cloudfoundry.reactor.tokenprovider.PasswordGrantTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.ConversionServiceFactoryBean;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.security.SecureRandom;
 import java.util.Random;
-import java.util.Set;
 
 /**
  * Main entry point and configuration class
@@ -40,34 +39,27 @@ public class ChaosLoris {
      * Start method
      *
      * @param args command line argument
-     * @throws Exception
+     * @throws Exception as part of specification
      */
     public static void main(String[] args) throws Exception {
         SpringApplication.run(ChaosLoris.class, args).start();
     }
 
-    // TODO: Remove once Converters are configured without ConversionService
     @Bean
-    public ConversionServiceFactoryBean conversionService(Set<Converter> converters) {
-        ConversionServiceFactoryBean factoryBean = new ConversionServiceFactoryBean();
-        factoryBean.setConverters(converters);
+    ReactorCloudFoundryClient cloudFoundryClient(@Value("${loris.cloudfoundry.host}") String host,
+                                                 @Value("${loris.cloudfoundry.password}") String password,
+                                                 @Value("${loris.cloudfoundry.skipSslValidation:false}") Boolean skipSslValidation,
+                                                 @Value("${loris.cloudfoundry.username}") String username) {
 
-        return factoryBean;
-    }
-
-    @Bean
-    SpringCloudFoundryClient cloudFoundryClient(@Value("${loris.cloudfoundry.host}") String host,
-                                                @Value("${loris.cloudfoundry.username}") String username,
-                                                @Value("${loris.cloudfoundry.port:443}") Integer port,
-                                                @Value("${loris.cloudfoundry.password}") String password,
-                                                @Value("${loris.cloudfoundry.skipSslValidation:false}") Boolean skipSslValidation) {
-
-        return SpringCloudFoundryClient.builder()
-            .host(host)
-            .username(username)
-            .port(port)
-            .password(password)
-            .skipSslValidation(skipSslValidation)
+        return ReactorCloudFoundryClient.builder()
+            .connectionContext(DefaultConnectionContext.builder()
+                .apiHost(host)
+                .skipSslValidation(skipSslValidation)
+                .build())
+            .tokenProvider(PasswordGrantTokenProvider.builder()
+                .password(password)
+                .username(username)
+                .build())
             .build();
     }
 

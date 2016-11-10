@@ -27,7 +27,7 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
-class IndexController {
+public class IndexController {
 
     @RequestMapping(method = GET, value = "/", produces = HAL_JSON_VALUE)
     ResponseEntity index() {

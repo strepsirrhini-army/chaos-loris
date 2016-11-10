@@ -16,14 +16,13 @@
 
 package io.pivotal.strepsirrhini.chaosloris.data;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.springframework.context.ApplicationEvent;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+import java.util.Objects;
+
+/**
+ * An event signaling that a {@link Schedule} has been created
+ */
 public final class ScheduleCreatedEvent extends ApplicationEvent {
 
     private final Schedule schedule;
@@ -37,6 +36,41 @@ public final class ScheduleCreatedEvent extends ApplicationEvent {
     public ScheduleCreatedEvent(Object source, Schedule schedule) {
         super(source);
         this.schedule = schedule;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ScheduleCreatedEvent that = (ScheduleCreatedEvent) o;
+        return Objects.equals(this.schedule, that.schedule) &&
+            Objects.equals(getSource(), that.getSource());
+    }
+
+    /**
+     * Returns the schedule
+     *
+     * @return the schedule
+     */
+    public Schedule getSchedule() {
+        return this.schedule;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.schedule, getSource());
+    }
+
+    @Override
+    public String toString() {
+        return "ScheduleCreatedEvent{" +
+            "schedule=" + this.schedule +
+            ", source=" + getSource() +
+            "} ";
     }
 
 }

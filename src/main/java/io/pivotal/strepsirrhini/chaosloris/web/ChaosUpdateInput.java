@@ -16,20 +16,28 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
 
 /**
- * Input object for updating a {@link Chaos} <p> <b>This class is not threadsafe</b>
+ * Input for chaos update
  */
-@Data
 public final class ChaosUpdateInput {
 
     @DecimalMax("1")
     @DecimalMin("0")
-    private Double probability;
+    private final Double probability;
+
+    @JsonCreator
+    ChaosUpdateInput(@JsonProperty("probability") Double probability) {
+        this.probability = probability;
+    }
+
+    Double getProbability() {
+        return this.probability;
+    }
 
 }

@@ -25,9 +25,9 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Component
-final class EventResourceAssembler extends ResourceAssemblerSupport<Event, EventResourceAssembler.EventResource> {
+public final class EventResourceAssembler extends ResourceAssemblerSupport<Event, EventResourceAssembler.EventResource> {
 
-    EventResourceAssembler() {
+    public EventResourceAssembler() {
         super(EventController.class, EventResource.class);
     }
 

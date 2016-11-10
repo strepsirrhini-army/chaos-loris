@@ -27,11 +27,11 @@ final class ConstrainedFields {
 
     private final ConstraintDescriptions constraintDescriptions;
 
-    public ConstrainedFields(Class<?> input) {
+    ConstrainedFields(Class<?> input) {
         this.constraintDescriptions = new ConstraintDescriptions(input);
     }
 
-    public FieldDescriptor withPath(String path) {
+    FieldDescriptor withPath(String path) {
         String constraints = StringUtils.collectionToCommaDelimitedString(this.constraintDescriptions.descriptionsForProperty(path));
 
         return fieldWithPath(path).attributes(

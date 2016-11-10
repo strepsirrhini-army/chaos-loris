@@ -46,6 +46,7 @@ public final class CloudFoundryClientHealthIndicatorTest {
                 .build()))
             .thenReturn(Mono
                 .just(GetInfoResponse.builder()
+                    .apiVersion("2.62.0")
                     .build()));
 
         Health.Builder builder = new Health.Builder();
@@ -54,10 +55,10 @@ public final class CloudFoundryClientHealthIndicatorTest {
 
         Health health = builder.build();
         assertThat(health.getStatus()).isEqualTo(Status.UP);
-        assertThat(health.getDetails()).isEmpty();
+        assertThat(health.getDetails()).containsEntry("apiVersion", "2.62.0");
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
     public void notHealthy() throws Exception {
         when(this.cloudFoundryClient.info()
             .get(GetInfoRequest.builder()
@@ -67,11 +68,8 @@ public final class CloudFoundryClientHealthIndicatorTest {
 
         Health.Builder builder = new Health.Builder();
 
-        this.healthIndicator.doHealthCheck(builder);
 
-        Health health = builder.build();
-        assertThat(health.getStatus()).isEqualTo(Status.DOWN);
-        assertThat(health.getDetails()).containsEntry("error", "java.lang.IllegalStateException: test-message");
+        this.healthIndicator.doHealthCheck(builder);
     }
 
     @Before

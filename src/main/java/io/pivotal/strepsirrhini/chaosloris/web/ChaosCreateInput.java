@@ -16,8 +16,8 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.DecimalMin;
@@ -25,20 +25,38 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 /**
- * Input object for creating a {@link Chaos} <p> <b>This class is not threadsafe</b>
+ * Input for chaos creation
  */
-@Data
 public final class ChaosCreateInput {
 
     @NotNull
-    private URI application;
+    private final URI application;
 
     @DecimalMax("1")
     @DecimalMin("0")
     @NotNull
-    private Double probability;
+    private final Double probability;
 
     @NotNull
-    private URI schedule;
+    private final URI schedule;
+
+    @JsonCreator
+    ChaosCreateInput(@JsonProperty("application") URI application, @JsonProperty("probability") Double probability, @JsonProperty("schedule") URI schedule) {
+        this.application = application;
+        this.probability = probability;
+        this.schedule = schedule;
+    }
+
+    URI getApplication() {
+        return this.application;
+    }
+
+    Double getProbability() {
+        return this.probability;
+    }
+
+    URI getSchedule() {
+        return this.schedule;
+    }
 
 }

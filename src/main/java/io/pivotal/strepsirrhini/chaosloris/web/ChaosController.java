@@ -50,7 +50,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
 @RequestMapping("/chaoses")
-class ChaosController {
+public class ChaosController {
 
     private static final Pattern APPLICATION = Pattern.compile(".*/applications/([\\d]+)");
 

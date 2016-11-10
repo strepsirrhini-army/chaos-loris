@@ -1,6 +1,4 @@
 # Chaos Loris
-[![Build Status](https://travis-ci.org/strepsirrhini-army/chaos-loris.svg)](https://travis-ci.org/strepsirrhini-army/chaos-loris)
-
 This project is a self-hostable application to randomly destroy Cloud Foundry application instances, as an aid to resilience testing of high-availability systems. The is accomplished by describing a schedule that an application should be acted on as well as the probability that any instance of that application has of being destroyed.
 
 ## Usage
@@ -17,8 +15,7 @@ Since the application is designed to work in a cloud-native environment, all con
 | --- | -----------
 | `LORIS_CLOUDFOUNDRY_HOST` | The host of the Cloud Foundry instance running the targeted applications.
 | `LORIS_CLOUDFOUNDRY_PASSWORD` | The password to log into the Cloud Foundry instance.
-| `LORIS_CLOUDFOUNDRY_PORT` | The port of the Cloud Foundry instance running the targeted applications. _(Optional, default `443`)_
-| `LORIS_CLOUDFOUNDRY_SKIP_SSL_VALIDATION` | Whether to skip SSL validation of the Cloud Foundry instance running targeted applications. _(Optional, default `false`)_
+| `LORIS_CLOUDFOUNDRY_SKIPSSLVALIDATION` | Whether to skip SSL validation of the Cloud Foundry instance running targeted applications. _(Optional, default `false`)_
 | `LORIS_CLOUDFOUNDRY_USERNAME` | The username to log into the Cloud Foundry instance.  The user must have permissions to destroy any configured application.
 
 ## Deployment

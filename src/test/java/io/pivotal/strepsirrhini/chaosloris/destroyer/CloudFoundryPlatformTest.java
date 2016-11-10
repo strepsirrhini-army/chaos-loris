@@ -25,10 +25,10 @@ import org.cloudfoundry.client.v2.applications.TerminateApplicationInstanceReque
 import org.junit.Before;
 import org.junit.Test;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -45,26 +45,34 @@ public final class CloudFoundryPlatformTest {
     @Test
     public void getInstanceCount() {
         UUID applicationId = UUID.randomUUID();
-        Application application = new Application(applicationId);
 
-        requestApplicationSummary(this.cloudFoundryClient, applicationId.toString());
+        requestApplicationSummary(this.cloudFoundryClient, applicationId.toString(), Mono.just(SummaryApplicationResponse.builder()
+            .instances(1)
+            .build()));
 
-        assertThat(this.platform.getInstanceCount(application).get()).isEqualTo(1);
+        this.platform.getInstanceCount(new Application(applicationId))
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .expectComplete()
+            .verify();
     }
 
     @Before
     public void setUp() throws Exception {
-        when(this.cloudFoundryClient.applicationsV2()).thenReturn(this.applications);
+        when(this.cloudFoundryClient.applicationsV2())
+            .thenReturn(this.applications);
     }
 
     @Test
     public void terminateInstance() {
         UUID applicationId = UUID.randomUUID();
-        Application application = new Application(applicationId);
 
-        requestTerminateInstance(this.cloudFoundryClient, applicationId.toString(), "0");
+        requestTerminateInstance(this.cloudFoundryClient, applicationId.toString(), "0", Mono.empty());
 
-        this.platform.terminateInstance(application, 0).get();
+        this.platform.terminateInstance(new Application(applicationId), 0)
+            .as(StepVerifier::create)
+            .expectComplete()
+            .verify();
 
         verify(this.cloudFoundryClient.applicationsV2())
             .terminateInstance(TerminateApplicationInstanceRequest.builder()
@@ -73,24 +81,21 @@ public final class CloudFoundryPlatformTest {
                 .build());
     }
 
-    private static void requestApplicationSummary(CloudFoundryClient cloudFoundryClient, String applicationId) {
+    private static void requestApplicationSummary(CloudFoundryClient cloudFoundryClient, String applicationId, Mono<SummaryApplicationResponse> response) {
         when(cloudFoundryClient.applicationsV2()
             .summary(SummaryApplicationRequest.builder()
                 .applicationId(applicationId)
                 .build()))
-            .thenReturn(Mono
-                .just(SummaryApplicationResponse.builder()
-                    .instances(1)
-                    .build()));
+            .thenReturn(response);
     }
 
-    private static void requestTerminateInstance(CloudFoundryClient cloudFoundryClient, String applicationId, String index) {
+    private static void requestTerminateInstance(CloudFoundryClient cloudFoundryClient, String applicationId, String index, Mono<Void> response) {
         when(cloudFoundryClient.applicationsV2()
             .terminateInstance(TerminateApplicationInstanceRequest.builder()
                 .applicationId(applicationId)
                 .index(index)
                 .build()))
-            .thenReturn(Mono.empty());
+            .thenReturn(response);
     }
 
 }

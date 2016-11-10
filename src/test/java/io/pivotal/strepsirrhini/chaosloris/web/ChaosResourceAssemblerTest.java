@@ -16,54 +16,56 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
-import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
-import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
-import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import org.cloudfoundry.client.CloudFoundryClient;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-public class ChaosResourceAssemblerTest extends AbstractIntegrationTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class ChaosResourceAssemblerTest {
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
 
-    @Autowired
-    private ChaosRepository chaosRepository;
-
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private EventRepository eventRepository;
 
     @Autowired
     private ChaosResourceAssembler resourceAssembler;
 
-    @Autowired
-    private ScheduleRepository scheduleRepository;
-
     @Test
     public void toResource() {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(-1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(-2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos = new Chaos(application, 0.2, schedule);
+        chaos.setId(-3L);
 
-        Event event = new Event(chaos, Instant.now(), Collections.emptyList(), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event);
+        Event event = new Event(chaos, Instant.EPOCH, Collections.emptyList(), Integer.MIN_VALUE);
+        event.setId(-4L);
+
+        when(this.eventRepository.findByChaos(chaos))
+            .thenReturn(Collections.singletonList(event));
 
         ChaosResourceAssembler.ChaosResource resource = this.resourceAssembler.toResource(chaos);
 
@@ -73,4 +75,5 @@ public class ChaosResourceAssemblerTest extends AbstractIntegrationTest {
         assertThat(resource.getLink("event")).isNotNull();
         assertThat(resource.getLink("schedule")).isNotNull();
     }
+
 }

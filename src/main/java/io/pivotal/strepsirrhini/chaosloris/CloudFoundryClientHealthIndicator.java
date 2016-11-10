@@ -27,8 +27,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
-import static org.cloudfoundry.util.tuple.TupleUtils.function;
-
 @Component
 final class CloudFoundryClientHealthIndicator extends AbstractHealthIndicator {
 
@@ -41,22 +39,9 @@ final class CloudFoundryClientHealthIndicator extends AbstractHealthIndicator {
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
-        // TODO: What's the best practice here
-
-        Mono
-            .when(
-                requestGetInfo(this.cloudFoundryClient),
-                Mono.just(builder)
-            )
-            .then(function((r, b) -> Mono.just(b.up())))
-            .otherwise(t -> Mono.just(builder.down((Exception) t)))
-            .get(Duration.ofSeconds(10));
-
-//        requestGetInfo(this.cloudFoundryClient)
-//            .doOnSuccess(response -> builder.up())
-//            .doOnError(error -> builder.down((Exception) error))
-//            .otherwise(error -> Mono.empty())
-//            .get(Duration.ofSeconds(10));
+        requestGetInfo(this.cloudFoundryClient)
+            .doOnSuccess(response -> builder.up().withDetail("apiVersion", response.getApiVersion()))
+            .block(Duration.ofSeconds(10));
     }
 
     private static Mono<GetInfoResponse> requestGetInfo(CloudFoundryClient cloudFoundryClient) {

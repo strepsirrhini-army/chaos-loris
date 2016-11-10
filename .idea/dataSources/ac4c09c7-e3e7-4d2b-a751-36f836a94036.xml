@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="H2 - Chaos Loris">
+  <database-model serializer="dbm" rdbms="H2" format-version="2.6">
+    <database id="1" name="CHAOS-LORIS">
+      <visible>1</visible>
+    </database>
+    <schema id="2" parent="1" name="PUBLIC">
+      <visible>1</visible>
+    </schema>
+  </database-model>
+</dataSource>
