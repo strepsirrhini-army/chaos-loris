@@ -34,7 +34,7 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @RestController
 @RequestMapping("/events")
-class EventController {
+public class EventController {
 
     private final EventRepository eventRepository;
 

@@ -78,35 +78,12 @@ final class DestructionScheduler implements HealthIndicator, Lifecycle {
         return this.running.get();
     }
 
-    @TransactionalEventListener
-    public void scheduleCreated(ScheduleCreatedEvent event) {
-        start(event.getSchedule(), this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
-            .subscribe();
-    }
-
-    @TransactionalEventListener
-    public void scheduleDeleted(ScheduleDeletedEvent event) {
-        stop(event.getId(), this.scheduled, this.logger)
-            .subscribe();
-    }
-
-    @TransactionalEventListener
-    public void scheduleUpdated(ScheduleUpdatedEvent event) {
-        Schedule schedule = event.getSchedule();
-        Flux
-            .concat(
-                stop(schedule.getId(), this.scheduled, this.logger),
-                start(schedule, this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
-            )
-            .subscribe();
-    }
-
     @Override
     public void start() {
         Flux
             .fromIterable(this.scheduleRepository.findAll())
             .flatMap(schedule -> start(schedule, this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger))
-            .doOnComplete(() -> this.running.set(true))  // TODO: Is this right?
+            .doOnComplete(() -> this.running.set(true))
             .subscribe();
     }
 
@@ -115,7 +92,30 @@ final class DestructionScheduler implements HealthIndicator, Lifecycle {
         Flux
             .fromIterable(this.scheduled.keySet())
             .flatMap(id -> stop(id, this.scheduled, this.logger))
-            .doOnComplete(() -> this.running.set(false))  // TODO: Is this right?
+            .doOnComplete(() -> this.running.set(false))
+            .subscribe();
+    }
+
+    @TransactionalEventListener
+    void scheduleCreated(ScheduleCreatedEvent event) {
+        start(event.getSchedule(), this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
+            .subscribe();
+    }
+
+    @TransactionalEventListener
+    void scheduleDeleted(ScheduleDeletedEvent event) {
+        stop(event.getId(), this.scheduled, this.logger)
+            .subscribe();
+    }
+
+    @TransactionalEventListener
+    void scheduleUpdated(ScheduleUpdatedEvent event) {
+        Schedule schedule = event.getSchedule();
+        Flux
+            .concat(
+                stop(schedule.getId(), this.scheduled, this.logger),
+                start(schedule, this.destroyerFactory, this.taskScheduler, this.scheduled, this.logger)
+            )
             .subscribe();
     }
 

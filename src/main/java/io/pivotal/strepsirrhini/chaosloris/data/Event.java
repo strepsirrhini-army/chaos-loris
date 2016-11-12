@@ -17,59 +17,150 @@
 package io.pivotal.strepsirrhini.chaosloris.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.Singular;
-import org.hibernate.annotations.Type;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OrderBy;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
-import static lombok.AccessLevel.PACKAGE;
-
-@Data
+/**
+ * An event representing the execution of chaos <p> <b>This class is not threadsafe</b>
+ */
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@NoArgsConstructor(access = PACKAGE)
 public class Event {
 
+    @JoinColumn(nullable = false)
     @ManyToOne
     @JsonIgnore
     private Chaos chaos;
 
-    // TODO: Remove with Hibernate 5
-    @Type(type = "io.pivotal.strepsirrhini.chaosloris.data.InstantType")
+    @Column(nullable = false)
     private Instant executedAt;
 
-    @Id
+    @Column(nullable = false)
     @GeneratedValue
+    @Id
     @JsonIgnore
     private Long id;
 
+    @Column(nullable = false)
     @ElementCollection
     @OrderBy
     private List<Integer> terminatedInstances;
 
+    @Column(nullable = false)
     private Integer totalInstanceCount;
 
-    @Builder
-    public Event(Chaos chaos, Instant executedAt, @Singular List<Integer> terminatedInstances, Integer totalInstanceCount) {
+    public Event(Chaos chaos, Instant executedAt, List<Integer> terminatedInstances, Integer totalInstanceCount) {
         this.chaos = chaos;
         this.executedAt = executedAt;
         this.terminatedInstances = terminatedInstances;
         this.totalInstanceCount = totalInstanceCount;
     }
 
+    Event() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Event event = (Event) o;
+        return Objects.equals(this.chaos, event.chaos) &&
+            Objects.equals(this.executedAt, event.executedAt) &&
+            Objects.equals(this.id, event.id) &&
+            Objects.equals(this.terminatedInstances, event.terminatedInstances) &&
+            Objects.equals(this.totalInstanceCount, event.totalInstanceCount);
+    }
+
+    /**
+     * Returns the chaos
+     *
+     * @return the chaos
+     */
+    public Chaos getChaos() {
+        return this.chaos;
+    }
+
+    /**
+     * Returns when the event was executed
+     *
+     * @return when the event was executed
+     */
+    public Instant getExecutedAt() {
+        return this.executedAt;
+    }
+
+    /**
+     * Returns the id
+     *
+     * @return the id
+     */
+    public Long getId() {
+        return this.id;
+    }
+
+    /**
+     * Sets the id
+     *
+     * @param id the id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    /**
+     * Returns the number of instances terminated
+     *
+     * @return the number of instances terminated
+     */
     public int getTerminatedInstanceCount() {
-        return this.terminatedInstances.size();
+        return this.getTerminatedInstances().size();
+    }
+
+    /**
+     * Returns the terminated instances
+     *
+     * @return the terminated instances
+     */
+    public List<Integer> getTerminatedInstances() {
+        return this.terminatedInstances;
+    }
+
+    /**
+     * Returns the total instance count
+     *
+     * @return the total instance count
+     */
+    public Integer getTotalInstanceCount() {
+        return this.totalInstanceCount;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.chaos, this.executedAt, this.id, this.terminatedInstances, this.totalInstanceCount);
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+            "chaos=" + this.chaos +
+            ", executedAt=" + this.executedAt +
+            ", id=" + this.id +
+            ", terminatedInstances=" + this.terminatedInstances +
+            ", totalInstanceCount=" + this.totalInstanceCount +
+            '}';
     }
 
 }

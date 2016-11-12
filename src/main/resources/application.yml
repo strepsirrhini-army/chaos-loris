@@ -13,9 +13,6 @@
 # limitations under the License.
 
 ---
-management:
-  security:
-    enabled: false
 loris:
   reaper:
     history: P1W

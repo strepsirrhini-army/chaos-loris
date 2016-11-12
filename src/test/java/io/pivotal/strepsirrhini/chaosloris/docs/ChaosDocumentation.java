@@ -16,7 +16,6 @@
 
 package io.pivotal.strepsirrhini.chaosloris.docs;
 
-import io.pivotal.strepsirrhini.chaosloris.MapBuilder;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
@@ -25,25 +24,48 @@ import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
 import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
-import io.pivotal.strepsirrhini.chaosloris.web.ApplicationController;
+import io.pivotal.strepsirrhini.chaosloris.web.ChaosController;
 import io.pivotal.strepsirrhini.chaosloris.web.ChaosCreateInput;
+import io.pivotal.strepsirrhini.chaosloris.web.ChaosResourceAssembler;
 import io.pivotal.strepsirrhini.chaosloris.web.ChaosUpdateInput;
-import io.pivotal.strepsirrhini.chaosloris.web.ScheduleController;
+import org.cloudfoundry.client.CloudFoundryClient;
+import org.cloudfoundry.util.FluentMap;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
+import org.springframework.boot.test.autoconfigure.restdocs.RestDocsMockMvcConfigurationCustomizer;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.restdocs.mockmvc.MockMvcRestDocumentationConfigurer;
+import org.springframework.restdocs.templates.TemplateFormats;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.UUID;
 
+import static io.pivotal.strepsirrhini.chaosloris.JsonTestUtilities.asJson;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.document;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.links;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.listLinks;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.listRequestParameters;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.listResponseFields;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.page;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.query;
+import static io.pivotal.strepsirrhini.chaosloris.docs.DocumentationUtilities.responseFields;
+import static org.mockito.Mockito.when;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
-import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.linkWithRel;
-import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.links;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.delete;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.patch;
@@ -51,157 +73,169 @@ import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuild
 import static org.springframework.restdocs.payload.JsonFieldType.NUMBER;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
-import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.pathParameters;
-import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 
-public class ChaosDocumentation extends AbstractApiDocumentation {
+@AutoConfigureRestDocs(outputDir = "target/generated-snippets", uriScheme = "https", uriHost = "chaos-loris", uriPort = 443)
+@RunWith(SpringRunner.class)
+@WebMvcTest(ChaosController.class)
+public class ChaosDocumentation {
 
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ApplicationRepository applicationRepository;
 
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ChaosRepository chaosRepository;
 
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private EventRepository eventRepository;
 
     @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ScheduleRepository scheduleRepository;
 
     @Test
     public void chaosCreate() throws Exception {
-        ConstrainedFields fields = new ConstrainedFields(ChaosCreateInput.class);
-
-        this.document.snippets(
-            requestFields(
-                fields.withPath("application").description("The URI of the application to create chaos on"),
-                fields.withPath("probability").description("The probability of an instance of the application experiencing chaos"),
-                fields.withPath("schedule").description("The URI of the schedule to create chaos on")),
-            responseHeaders(
-                headerWithName("Location").description("The URI of the newly created chaos")));
-
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
 
         Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        this.scheduleRepository.saveAndFlush(schedule);
+        schedule.setId(2L);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("application", linkTo(methodOn(ApplicationController.class).read(application.getId())).toUri())
-            .entry("probability", 0.1)
-            .entry("schedule", linkTo(methodOn(ScheduleController.class).read(schedule.getId())).toUri())
-            .build());
+        when(this.applicationRepository.getOne(1L))
+            .thenReturn(application);
 
-        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON).content(content));
+        when(this.scheduleRepository.getOne(2L))
+            .thenReturn(schedule);
+
+        when(this.chaosRepository.saveAndFlush(new Chaos(application, 0.1, schedule)))
+            .then(invocation -> {
+                Chaos chaos = invocation.getArgumentAt(0, Chaos.class);
+                chaos.setId(3L);
+                return chaos;
+            });
+
+        ConstrainedFields fields = new ConstrainedFields(ChaosCreateInput.class);
+
+        this.mockMvc.perform(post("/chaoses").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("application", "https://chaos-loris/applications/1")
+                .entry("probability", 0.1)
+                .entry("schedule", "https://chaos-loris/schedules/2")
+                .build())))
+            .andDo(document(
+                requestFields(
+                    fields.withPath("application").description("The URI of the application to create chaos on"),
+                    fields.withPath("probability").description("The probability of an instance of the application experiencing chaos"),
+                    fields.withPath("schedule").description("The URI of the schedule to create chaos on")),
+                responseHeaders(headerWithName("Location").description("The URI of the newly created chaos"))));
     }
 
     @Test
     public void chaosDelete() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
-
-        this.document.snippets(
-            pathParameters(
-                parameterWithName("id").description("The chaos' id")));
-
-        this.mockMvc.perform(delete("/chaoses/{id}", chaos.getId()));
+        this.mockMvc.perform(delete("/chaoses/{id}", 1L))
+            .andDo(document(
+                pathParameters(parameterWithName("id").description("The chaos' id"))));
     }
 
     @Test
     public void chaosList() throws Exception {
         Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        this.scheduleRepository.saveAndFlush(schedule);
+        schedule.setId(1L);
 
-        String query = createPages(i -> {
-            Application application = new Application(UUID.randomUUID());
-            this.applicationRepository.saveAndFlush(application);
+        PageRequest pageable = new PageRequest(2, 3);
 
-            Chaos chaos = new Chaos(application, 0.1, schedule);
-            this.chaosRepository.saveAndFlush(chaos);
-        });
+        when(this.chaosRepository.findAll(pageable))
+            .thenReturn(page(pageable, item -> {
+                Application application = new Application(UUID.randomUUID());
+                application.setId(item + 10);
 
-        this.document.snippets(
-            requestParameters(
-                parameterWithName("page").description("Page to retrieve"),
-                parameterWithName("size").description("Size of the page to retrieve")),
-            responseFields(
-                fieldWithPath("page.number").description("The number of this page of results"),
-                fieldWithPath("page.size").description("The size of this page of results"),
-                fieldWithPath("page.totalPages").description("The total number of pages of results"),
-                fieldWithPath("page.totalElements").description("The total number of results"),
-                fieldWithPath("_embedded.chaoses").description("A collection of Chaoses as described in [Read a Chaos](#read-a-chaos)"),
-                fieldWithPath("_links").ignored()),
-            links(
-                linkWithRel("self").ignored(),
-                linkWithRel("first").optional().description("The first page of results"),
-                linkWithRel("last").optional().description("The last page of results"),
-                linkWithRel("next").optional().description("The next page of results"),
-                linkWithRel("prev").optional().description("The previous page of results")));
+                Chaos chaos = new Chaos(application, 0.1, schedule);
+                chaos.setId(item);
+                return chaos;
+            }));
 
-        this.mockMvc.perform(get("/chaoses" + query).accept(HAL_JSON));
+        this.mockMvc.perform(get("/chaoses" + query(pageable)).accept(HAL_JSON))
+            .andDo(document(
+                listRequestParameters(),
+                listResponseFields(fieldWithPath("_embedded.chaoses").description("A collection of Chaoses as described in [Read a Chaos](#read-a-chaos)")),
+                listLinks()));
     }
 
     @Test
     public void chaosRead() throws Exception {
-        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        this.scheduleRepository.saveAndFlush(schedule);
-
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
+
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
 
         Event event = new Event(chaos, Instant.now(), Collections.singletonList(3), 10);
-        this.eventRepository.saveAndFlush(event);
+        event.setId(4L);
 
-        this.document.snippets(
-            pathParameters(
-                parameterWithName("id").description("The chaos' id")),
-            responseFields(
-                fieldWithPath("probability").description("The probability of an instance of the application experiencing chaos"),
-                fieldWithPath("_links").ignored()),
-            links(
-                linkWithRel("self").ignored(),
-                linkWithRel("application").description("The [Application](#applications) to create chaos on"),
-                linkWithRel("event").description("The [Events](#events) performed by this chaos"),
-                linkWithRel("schedule").description("The [Schedule](#schedules) to create chaos on")));
+        when(this.chaosRepository.getOne(chaos.getId()))
+            .thenReturn(chaos);
 
-        this.mockMvc.perform(get("/chaoses/{id}", chaos.getId()).accept(HAL_JSON));
+        when(this.eventRepository.findByChaos(chaos))
+            .thenReturn(Collections.singletonList(event));
+
+        this.mockMvc.perform(get("/chaoses/{id}", chaos.getId()).accept(HAL_JSON))
+            .andDo(document(
+                pathParameters(parameterWithName("id").description("The chaos' id")),
+                responseFields(fieldWithPath("probability").description("The probability of an instance of the application experiencing chaos")),
+                links(
+                    linkWithRel("application").description("The [Application](#applications) to create chaos on"),
+                    linkWithRel("event").description("The [Events](#events) performed by this chaos"),
+                    linkWithRel("schedule").description("The [Schedule](#schedules) to create chaos on"))));
     }
 
     @Test
     public void chaosUpdate() throws Exception {
-        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
-        this.scheduleRepository.saveAndFlush(schedule);
-
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(1L);
+
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(2L);
 
         Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        chaos.setId(3L);
+
+        when(this.chaosRepository.getOne(chaos.getId()))
+            .thenReturn(chaos);
 
         ConstrainedFields fields = new ConstrainedFields(ChaosUpdateInput.class);
 
-        this.document.snippets(
-            pathParameters(
-                parameterWithName("id").description("The chaos' id")),
-            requestFields(
-                fields.withPath("probability").optional().type(NUMBER).description("The probability of an instance of the application experiencing chaos")));
+        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("probability", 0.5))))
+            .andDo(document(
+                pathParameters(parameterWithName("id").description("The chaos' id")),
+                requestFields(fields.withPath("probability").type(NUMBER).description("The probability of an instance of the application experiencing chaos").optional())));
+    }
 
-        String content = asJson(MapBuilder.builder()
-            .entry("probability", 0.5)
-            .build());
+    @EnableSpringDataWebSupport
+    @TestConfiguration
+    static class AdditionalConfiguration implements RestDocsMockMvcConfigurationCustomizer {
 
-        this.mockMvc.perform(patch("/chaoses/{id}", chaos.getId()).contentType(APPLICATION_JSON).content(content));
+        @Override
+        public void customize(MockMvcRestDocumentationConfigurer configurer) {
+            configurer
+                .uris().withScheme("https").withHost("chaos-loris").withPort(443).and()
+                .snippets().withTemplateFormat(TemplateFormats.markdown());
+        }
+
+        @Bean
+        ChaosResourceAssembler chaosResourceAssembler(EventRepository eventRepository) {
+            return new ChaosResourceAssembler(eventRepository);
+        }
+
     }
 
 }

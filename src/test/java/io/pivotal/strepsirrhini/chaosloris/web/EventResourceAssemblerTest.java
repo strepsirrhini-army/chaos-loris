@@ -16,13 +16,18 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
 import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
+import org.cloudfoundry.client.CloudFoundryClient;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -30,7 +35,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EventResourceAssemblerTest extends AbstractIntegrationTest {
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class EventResourceAssemblerTest {
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
 
     @Autowired
     private EventResourceAssembler resourceAssembler;

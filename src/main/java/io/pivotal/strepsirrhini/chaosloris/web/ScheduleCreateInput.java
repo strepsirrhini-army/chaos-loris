@@ -16,21 +16,34 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
 /**
- * Input object for creating a {@link Schedule} <p> <b>This class is not threadsafe</b>
+ * Input for schedule creation
  */
-@Data
 public final class ScheduleCreateInput {
 
     @NotNull
-    private String expression;
+    private final String expression;
 
     @NotNull
-    private String name;
+    private final String name;
+
+    @JsonCreator
+    ScheduleCreateInput(@JsonProperty("expression") String expression, @JsonProperty("name") String name) {
+        this.expression = expression;
+        this.name = name;
+    }
+
+    String getExpression() {
+        return this.expression;
+    }
+
+    String getName() {
+        return this.name;
+    }
 
 }

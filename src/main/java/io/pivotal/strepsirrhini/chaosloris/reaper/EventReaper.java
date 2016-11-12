@@ -40,9 +40,9 @@ class EventReaper {
     private final Period period;
 
     @Autowired
-    EventReaper(EventRepository eventRepository, @Value("${loris.reaper.history}") Period period) {
+    EventReaper(EventRepository eventRepository, @Value("${loris.reaper.history}") String period) {
         this.eventRepository = eventRepository;
-        this.period = period;
+        this.period = Period.parse(period);
     }
 
     @Scheduled(cron = "${loris.reaper.schedule}")
@@ -66,7 +66,7 @@ class EventReaper {
         return Mono
             .just(event)
             .doOnSubscribe(s -> logger.info("Reap {}", event))
-            .doOnSuccess(eventRepository::delete)  // TODO: What to do here?
+            .doOnSuccess(eventRepository::delete)
             .doOnSuccess(e -> logger.debug("Reaped {}", e));
     }
 

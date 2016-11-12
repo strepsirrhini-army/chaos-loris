@@ -27,12 +27,12 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Component
-final class ScheduleResourceAssembler extends ResourceAssemblerSupport<Schedule, ScheduleResourceAssembler.ScheduleResource> {
+public final class ScheduleResourceAssembler extends ResourceAssemblerSupport<Schedule, ScheduleResourceAssembler.ScheduleResource> {
 
     private final ChaosRepository chaosRepository;
 
     @Autowired
-    ScheduleResourceAssembler(ChaosRepository chaosRepository) {
+    public ScheduleResourceAssembler(ChaosRepository chaosRepository) {
         super(ScheduleController.class, ScheduleResource.class);
         this.chaosRepository = chaosRepository;
     }

@@ -16,22 +16,33 @@
 
 package io.pivotal.strepsirrhini.chaosloris.data;
 
-import io.pivotal.strepsirrhini.chaosloris.AbstractIntegrationTest;
+import org.cloudfoundry.client.CloudFoundryClient;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChaosRepositoryTest extends AbstractIntegrationTest {
+
+@DataJpaTest(showSql = false)
+@RunWith(SpringRunner.class)
+public class ChaosRepositoryTest {
 
     @Autowired
     private ApplicationRepository applicationRepository;
 
     @Autowired
     private ChaosRepository chaosRepository;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
 
     @Autowired
     private ScheduleRepository scheduleRepository;

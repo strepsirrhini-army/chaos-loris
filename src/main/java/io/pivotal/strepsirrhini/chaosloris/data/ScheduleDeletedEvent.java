@@ -16,14 +16,13 @@
 
 package io.pivotal.strepsirrhini.chaosloris.data;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import org.springframework.context.ApplicationEvent;
 
-@Data
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
+import java.util.Objects;
+
+/**
+ * An event signaling that a {@link Schedule} has been deleted
+ */
 public final class ScheduleDeletedEvent extends ApplicationEvent {
 
     private final Long id;
@@ -37,6 +36,41 @@ public final class ScheduleDeletedEvent extends ApplicationEvent {
     public ScheduleDeletedEvent(Object source, Long id) {
         super(source);
         this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ScheduleDeletedEvent that = (ScheduleDeletedEvent) o;
+        return Objects.equals(this.id, that.id) &&
+            Objects.equals(getSource(), that.getSource());
+    }
+
+    /**
+     * Returns the id
+     *
+     * @return the id
+     */
+    public Long getId() {
+        return this.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.id, getSource());
+    }
+
+    @Override
+    public String toString() {
+        return "ScheduleDeletedEvent{" +
+            "id=" + id +
+            ", source=" + getSource() +
+            '}';
     }
 
 }

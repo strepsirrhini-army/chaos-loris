@@ -16,15 +16,45 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.MapBuilder;
+import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleCreatedEvent;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleDeletedEvent;
 import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import io.pivotal.strepsirrhini.chaosloris.data.ScheduleUpdatedEvent;
+import org.cloudfoundry.client.CloudFoundryClient;
+import org.cloudfoundry.util.FluentMap;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestComponent;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
-import static io.pivotal.strepsirrhini.chaosloris.MatchesPattern.matchesPattern;
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static io.pivotal.strepsirrhini.chaosloris.JsonTestUtilities.asJson;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -35,82 +65,117 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ScheduleControllerTest extends AbstractControllerTest {
+@RunWith(SpringRunner.class)
+@WebMvcTest(ScheduleController.class)
+public class ScheduleControllerTest {
 
     @Autowired
+    private TestApplicationEventListener applicationEventListener;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private ChaosRepository chaosRepository;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ScheduleController scheduleController;
+
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private ScheduleRepository scheduleRepository;
 
     @Test
     public void create() throws Exception {
-        assertThat(this.scheduleRepository.count()).isEqualTo(0);
+        this.applicationEventListener.clear();
 
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "test-expression")
-            .entry("name", "test-name")
-            .build());
+        when(this.scheduleRepository.saveAndFlush(new Schedule("test-expression", "test-name")))
+            .then(invocation -> {
+                Schedule schedule = invocation.getArgumentAt(0, Schedule.class);
+                schedule.setId(1L);
+                return schedule;
+            });
 
-        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("expression", "test-expression")
+                .entry("name", "test-name")
+                .build())))
             .andExpect(status().isCreated())
-            .andExpect(header().string("Location", matchesPattern(".*/schedules/[\\d]+")));
+            .andExpect(header().string("Location", "http://localhost/schedules/1L"));
 
-        assertThat(this.scheduleRepository.count()).isEqualTo(1);
+        Schedule schedule = new Schedule("test-expression", "test-name");
+        schedule.setId(1L);
+
+        this.applicationEventListener.getEvents()
+            .as(StepVerifier::create)
+            .expectNext(new ScheduleCreatedEvent(this.scheduleController, schedule))
+            .expectComplete()
+            .verify();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void createDuplicateName() throws Exception {
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        when(this.scheduleRepository.saveAndFlush(new Schedule("test-expression", "test-name")))
+            .thenThrow(DataIntegrityViolationException.class);
 
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "test-expression")
-            .entry("name", "test-name")
-            .build());
-
-        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("expression", "test-expression")
+                .entry("name", "test-name")
+                .build())))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullExpression() throws Exception {
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "test-expression")
-            .build());
-
-        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("expression", "test-expression"))))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void createNullName() throws Exception {
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "test-expression")
-            .build());
-
-        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(post("/schedules").contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("expression", "test-expression"))))
             .andExpect(status().isBadRequest());
     }
 
     @Test
     public void del() throws Exception {
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        this.applicationEventListener.clear();
 
-        this.mockMvc.perform(delete("/schedules/{id}", schedule.getId()))
+        this.mockMvc.perform(delete("/schedules/{id}", 1L))
             .andExpect(status().isNoContent());
 
-        assertThat(this.scheduleRepository.exists(schedule.getId())).isFalse();
+        verify(this.scheduleRepository).delete(1L);
+
+        this.applicationEventListener.getEvents()
+            .as(StepVerifier::create)
+            .expectNext(new ScheduleDeletedEvent(this.scheduleController, 1L))
+            .expectComplete()
+            .verify();
     }
 
     @Test
     public void deleteDoesNotExist() throws Exception {
-        this.mockMvc.perform(delete("/schedules/{id}", Long.MAX_VALUE))
+        doThrow(EmptyResultDataAccessException.class)
+            .when(this.scheduleRepository).delete(1L);
+
+        this.mockMvc.perform(delete("/schedules/{id}", 1L))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void list() throws Exception {
         Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        schedule.setId(1L);
+
+        when(this.scheduleRepository.findAll(new PageRequest(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(schedule)));
 
         this.mockMvc.perform(get("/schedules").accept(HAL_JSON))
             .andExpect(status().isOk())
@@ -122,7 +187,10 @@ public class ScheduleControllerTest extends AbstractControllerTest {
     @Test
     public void read() throws Exception {
         Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        schedule.setId(1L);
+
+        when(this.scheduleRepository.getOne(schedule.getId()))
+            .thenReturn(schedule);
 
         this.mockMvc.perform(get("/schedules/{id}", schedule.getId()).accept(HAL_JSON))
             .andExpect(status().isOk())
@@ -131,68 +199,150 @@ public class ScheduleControllerTest extends AbstractControllerTest {
             .andExpect(jsonPath("$._links.self").exists());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void readDoesNotExist() throws Exception {
-        this.mockMvc.perform(get("/schedules/{id}", Long.MAX_VALUE).accept(HAL_JSON))
+        when(this.scheduleRepository.getOne(1L))
+            .thenThrow(EntityNotFoundException.class);
+
+        this.mockMvc.perform(get("/schedules/{id}", 1L).accept(HAL_JSON))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void update() throws Exception {
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        this.applicationEventListener.clear();
 
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "another-test-expression")
-            .entry("name", "another-test-name")
-            .build());
+        Schedule schedule1 = new Schedule("test-expression", "test-name");
+        schedule1.setId(1L);
 
-        this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(schedule1.getId()))
+            .thenReturn(schedule1);
+
+        this.mockMvc.perform(patch("/schedules/{id}", schedule1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("expression", "another-test-expression")
+                .entry("name", "another-test-name")
+                .build())))
             .andExpect(status().isNoContent());
 
-        assertThat(schedule.getExpression()).isEqualTo("another-test-expression");
-        assertThat(schedule.getName()).isEqualTo("another-test-name");
+        Schedule schedule2 = new Schedule("another-test-expression", "another-test-name");
+        schedule2.setId(schedule1.getId());
+
+        verify(this.scheduleRepository).save(schedule2);
+
+        this.applicationEventListener.getEvents()
+            .as(StepVerifier::create)
+            .expectNext(new ScheduleUpdatedEvent(this.scheduleController, schedule2))
+            .expectComplete()
+            .verify();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void updateDoesNotExist() throws Exception {
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "another-test-expression")
-            .entry("name", "another-test-name")
-            .build());
+        when(this.scheduleRepository.getOne(1L))
+            .thenThrow(EntityNotFoundException.class);
 
-        this.mockMvc.perform(patch("/schedules/{id}", Long.MAX_VALUE).contentType(APPLICATION_JSON).content(content))
+        this.mockMvc.perform(patch("/schedules/{id}", 1L).contentType(APPLICATION_JSON)
+            .content(asJson(FluentMap.builder()
+                .entry("expression", "another-test-expression")
+                .entry("name", "another-test-name")
+                .build())))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void updateExpressionOnly() throws Exception {
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        this.applicationEventListener.clear();
 
-        String content = asJson(MapBuilder.builder()
-            .entry("expression", "another-test-expression")
-            .build());
+        Schedule schedule1 = new Schedule("test-expression", "test-name");
+        schedule1.setId(1L);
 
-        this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(schedule1.getId()))
+            .thenReturn(schedule1);
+
+        this.mockMvc.perform(patch("/schedules/{id}", schedule1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("expression", "another-test-expression"))))
             .andExpect(status().isNoContent());
 
-        assertThat(schedule.getExpression()).isEqualTo("another-test-expression");
+        Schedule schedule2 = new Schedule("another-test-expression", "test-name");
+        schedule2.setId(schedule1.getId());
+
+        verify(this.scheduleRepository).save(schedule2);
+
+        this.applicationEventListener.getEvents()
+            .as(StepVerifier::create)
+            .expectNext(new ScheduleUpdatedEvent(this.scheduleController, schedule2))
+            .expectComplete()
+            .verify();
     }
 
     @Test
     public void updateNameOnly() throws Exception {
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        this.applicationEventListener.clear();
 
-        String content = asJson(MapBuilder.builder()
-            .entry("name", "another-test-name")
-            .build());
+        Schedule schedule1 = new Schedule("test-expression", "test-name");
+        schedule1.setId(1L);
 
-        this.mockMvc.perform(patch("/schedules/{id}", schedule.getId()).contentType(APPLICATION_JSON).content(content))
+        when(this.scheduleRepository.getOne(schedule1.getId()))
+            .thenReturn(schedule1);
+
+        this.mockMvc.perform(patch("/schedules/{id}", schedule1.getId()).contentType(APPLICATION_JSON)
+            .content(asJson(Collections.singletonMap("name", "another-test-name"))))
             .andExpect(status().isNoContent());
 
-        assertThat(schedule.getName()).isEqualTo("another-test-name");
+        Schedule schedule2 = new Schedule("test-expression", "another-test-name");
+        schedule2.setId(schedule1.getId());
+
+        verify(this.scheduleRepository).save(schedule2);
+
+        this.applicationEventListener.getEvents()
+            .as(StepVerifier::create)
+            .expectNext(new ScheduleUpdatedEvent(this.scheduleController, schedule2))
+            .expectComplete()
+            .verify();
+    }
+
+    @EnableSpringDataWebSupport
+    @TestConfiguration
+    static class AdditionalConfiguration {
+
+        @Bean
+        ScheduleResourceAssembler scheduleResourceAssembler(ChaosRepository chaosRepository) {
+            return new ScheduleResourceAssembler(chaosRepository);
+        }
+
+    }
+
+    @TestComponent
+    static class TestApplicationEventListener {
+
+        private final List<ApplicationEvent> event = new ArrayList<>();
+
+        @EventListener
+        void listen(ScheduleCreatedEvent event) {
+            this.event.add(event);
+        }
+
+        @EventListener
+        void listen(ScheduleDeletedEvent event) {
+            this.event.add(event);
+        }
+
+        @EventListener
+        void listen(ScheduleUpdatedEvent event) {
+            this.event.add(event);
+        }
+
+        private void clear() {
+            this.event.clear();
+        }
+
+        private Flux<? super ApplicationEvent> getEvents() {
+            return Flux.fromIterable(this.event);
+        }
+
     }
 
 }

@@ -17,83 +17,89 @@
 package io.pivotal.strepsirrhini.chaosloris.web;
 
 import io.pivotal.strepsirrhini.chaosloris.data.Application;
-import io.pivotal.strepsirrhini.chaosloris.data.ApplicationRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Chaos;
-import io.pivotal.strepsirrhini.chaosloris.data.ChaosRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Event;
 import io.pivotal.strepsirrhini.chaosloris.data.EventRepository;
 import io.pivotal.strepsirrhini.chaosloris.data.Schedule;
-import io.pivotal.strepsirrhini.chaosloris.data.ScheduleRepository;
+import org.cloudfoundry.client.CloudFoundryClient;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.hateoas.MediaTypes.HAL_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class EventControllerTest extends AbstractControllerTest {
+@RunWith(SpringRunner.class)
+@WebMvcTest(EventController.class)
+public class EventControllerTest {
 
-    @Autowired
-    private ApplicationRepository applicationRepository;
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
+    private CloudFoundryClient cloudFoundryClient;
 
-    @Autowired
-    private ChaosRepository chaosRepository;
-
-    @Autowired
+    @MockBean(answer = Answers.RETURNS_SMART_NULLS)
     private EventRepository eventRepository;
 
     @Autowired
-    private ScheduleRepository scheduleRepository;
+    private MockMvc mockMvc;
 
     @Test
     public void del() throws Exception {
-        Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
-
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
-
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
-
-        Event event = new Event(chaos, Instant.EPOCH, Collections.emptyList(), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event);
-
-        this.mockMvc.perform(delete("/events/{id}", event.getId()))
+        this.mockMvc.perform(delete("/events/{id}", 1L))
             .andExpect(status().isNoContent());
 
-        assertThat(this.eventRepository.exists(event.getId())).isFalse();
+        verify(this.eventRepository).delete(1L);
     }
 
     @Test
     public void deleteDoesNotExist() throws Exception {
-        this.mockMvc.perform(delete("/events/{id}", Long.MAX_VALUE))
+        doThrow(EmptyResultDataAccessException.class)
+            .when(this.eventRepository).delete(1L);
+
+        this.mockMvc.perform(delete("/events/{id}", 1L))
             .andExpect(status().isNotFound());
     }
 
     @Test
     public void list() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(-1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(-2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos = new Chaos(application, 0.2, schedule);
+        chaos.setId(-3L);
 
         Event event = new Event(chaos, Instant.EPOCH, Collections.emptyList(), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event);
+        event.setId(-4L);
+
+        when(this.eventRepository.findAll(new PageRequest(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(event)));
 
         this.mockMvc.perform(get("/events").accept(HAL_JSON))
             .andExpect(status().isOk())
@@ -105,18 +111,21 @@ public class EventControllerTest extends AbstractControllerTest {
     @Test
     public void read() throws Exception {
         Application application = new Application(UUID.randomUUID());
-        this.applicationRepository.saveAndFlush(application);
+        application.setId(-1L);
 
-        Schedule schedule = new Schedule("test-expression", "test-name");
-        this.scheduleRepository.saveAndFlush(schedule);
+        Schedule schedule = new Schedule("0 0 * * * *", "hourly");
+        schedule.setId(-2L);
 
-        Chaos chaos = new Chaos(application, 0.1, schedule);
-        this.chaosRepository.saveAndFlush(chaos);
+        Chaos chaos = new Chaos(application, 0.2, schedule);
+        chaos.setId(-3L);
 
         Event event = new Event(chaos, Instant.EPOCH, Arrays.asList(0, 1), Integer.MIN_VALUE);
-        this.eventRepository.saveAndFlush(event);
+        event.setId(-4L);
 
-        this.mockMvc.perform(get("/events/{id}", event.getId()).accept(HAL_JSON))
+        when(this.eventRepository.getOne(schedule.getId()))
+            .thenReturn(event);
+
+        this.mockMvc.perform(get("/events/{id}", schedule.getId()).accept(HAL_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.executedAt").value(Instant.EPOCH.toString()))
             .andExpect(jsonPath("$.terminatedInstances").value(contains(0, 1)))
@@ -125,10 +134,22 @@ public class EventControllerTest extends AbstractControllerTest {
             .andExpect(jsonPath("$._links.chaos").exists());
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void readDoesNotExist() throws Exception {
-        this.mockMvc.perform(get("/events/{id}", Long.MAX_VALUE).accept(HAL_JSON))
-            .andExpect(status().isNotFound());
+        when(this.eventRepository.getOne(1L))
+            .thenThrow(EntityNotFoundException.class);
+    }
+
+    @EnableSpringDataWebSupport
+    @TestConfiguration
+    static class AdditionalConfiguration {
+
+        @Bean
+        EventResourceAssembler eventResourceAssembler() {
+            return new EventResourceAssembler();
+        }
+
     }
 
 }

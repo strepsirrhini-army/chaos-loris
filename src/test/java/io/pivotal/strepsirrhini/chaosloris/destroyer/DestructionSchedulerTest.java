@@ -160,4 +160,5 @@ public final class DestructionSchedulerTest {
 
         verify(future).cancel(false);
     }
+
 }

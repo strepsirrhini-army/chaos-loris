@@ -17,30 +17,26 @@
 package io.pivotal.strepsirrhini.chaosloris.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.Objects;
 import java.util.UUID;
-
-import static lombok.AccessLevel.PACKAGE;
 
 /**
  * An application that is a candidate for chaos <p> <p/><b>This class is not threadsafe</b>
  */
-@Data
 @Entity
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-@NoArgsConstructor(access = PACKAGE)
 public class Application {
 
+    @Column(nullable = false, unique = true)
     private UUID applicationId;
 
-    @Id
+    @Column(nullable = false)
     @GeneratedValue
+    @Id
     @JsonIgnore
     private Long id;
 
@@ -51,6 +47,62 @@ public class Application {
      */
     public Application(UUID applicationId) {
         this.applicationId = applicationId;
+    }
+
+    Application() {
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Application that = (Application) o;
+        return Objects.equals(this.applicationId, that.applicationId) &&
+            Objects.equals(this.id, that.id);
+    }
+
+    /**
+     * Returns the application id
+     *
+     * @return the application id
+     */
+    public UUID getApplicationId() {
+        return this.applicationId;
+    }
+
+    /**
+     * Returns the id
+     *
+     * @return the id
+     */
+    public Long getId() {
+        return this.id;
+    }
+
+    /**
+     * Sets the id
+     *
+     * @param id the id
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.applicationId, this.id);
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+            "applicationId=" + this.applicationId +
+            ", id=" + this.id +
+            '}';
     }
 
 }

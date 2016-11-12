@@ -16,19 +16,27 @@
 
 package io.pivotal.strepsirrhini.chaosloris.web;
 
-import io.pivotal.strepsirrhini.chaosloris.data.Application;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * Input object for creating an {@link Application}
+ * Input for application creation
  */
-@Data
 public final class ApplicationCreateInput {
 
     @NotNull
-    private UUID applicationId;
+    private final UUID applicationId;
+
+    @JsonCreator
+    ApplicationCreateInput(@JsonProperty("applicationId") UUID applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    UUID getApplicationId() {
+        return this.applicationId;
+    }
 
 }
