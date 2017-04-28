@@ -7,7 +7,9 @@
       </database-info>
       <case-sensitivity plain-identifiers="upper" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>
+      <introspection-schemas>CHAOS-LORIS:PUBLIC</introspection-schemas>
       <resolve-scope>CHAOS-LORIS:PUBLIC</resolve-scope>
+      <unqualified-resolve-schemas>CHAOS-LORIS:PUBLIC</unqualified-resolve-schemas>
     </data-source>
   </component>
 </project>
