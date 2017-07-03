@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
-set -e
+set -e -u
 
 mysqld_safe --datadir='/var/lib/mysql' &
 sleep 2
 mysqladmin create chaos-loris
 
 cd chaos-loris
-./mvnw -q package
+./mvnw -q -Dmaven.repo.local=$M2/repository -Dmaven.user.home=$M2 package
 
 mysqladmin shutdown

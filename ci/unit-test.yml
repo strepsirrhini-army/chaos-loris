@@ -9,6 +9,9 @@ image_resource:
 inputs:
 - name: chaos-loris
 
+caches:
+- path: m2
+
 run:
   path: chaos-loris/ci/unit-test.sh
 

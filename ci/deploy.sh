@@ -1,12 +1,6 @@
 #!/usr/bin/env sh
 
-set -e
-
-mysqld_safe --datadir='/var/lib/mysql' &
-sleep 2
-mysqladmin create chaos-loris
+set -e -u
 
 cd chaos-loris
-./mvnw -q deploy
-
-mysqladmin shutdown
+./mvnw -q -Dmaven.repo.local=$M2/repository -Dmaven.user.home=$M2 -Dmaven.test.skip=true deploy
