@@ -6,7 +6,7 @@ mysqld_safe --datadir='/var/lib/mysql' &
 sleep 2
 mysqladmin create chaos-loris
 
-BUNDLE_PATH=$PWD/gems
+export BUNDLE_PATH=$PWD/gems
 M2=$PWD/m2
 
 cd chaos-loris
