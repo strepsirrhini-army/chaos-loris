@@ -2,6 +2,7 @@
 
 set -e -u
 
+GEM_HOME=$PWD/gems
 M2=$PWD/m2
 
 cd chaos-loris
