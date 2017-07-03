@@ -10,7 +10,6 @@ inputs:
 - name: chaos-loris
 
 caches:
-- path: gems
 - path: m2
 
 run:

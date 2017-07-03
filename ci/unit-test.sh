@@ -7,6 +7,6 @@ sleep 2
 mysqladmin create chaos-loris
 
 cd chaos-loris
-BUNDLE_PATH=../gems ./mvnw -q -Dmaven.repo.local=../m2/repository -Dmaven.user.home=../m2 package
+./mvnw -q -Dmaven.repo.local=../m2/repository -Dmaven.user.home=../m2 package
 
 mysqladmin shutdown
