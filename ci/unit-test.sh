@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-set -e -u
+set -e -u -x
 
 mysqld_safe --datadir='/var/lib/mysql' &
 sleep 2
