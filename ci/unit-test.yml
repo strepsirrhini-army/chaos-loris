@@ -10,7 +10,7 @@ inputs:
 - name: chaos-loris
 
 caches:
-- path: m2
+- path: maven
 
 run:
   path: chaos-loris/ci/unit-test.sh
