@@ -6,7 +6,7 @@ mysqld_safe --datadir='/var/lib/mysql' &
 sleep 2
 mysqladmin create chaos-loris
 
-ln -fs $PWD/maven $HOME/.m2
+[[ -d $PWD/maven && ! -d $HOME/.m2 ]] && ln -s $PWD/maven $HOME/.m2
 
 cd chaos-loris
 ./mvnw -q package
