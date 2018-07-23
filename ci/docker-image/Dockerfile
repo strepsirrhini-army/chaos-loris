@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --update \
+RUN apk add --no-cache --update \
     bash \
     build-base \
     git \
@@ -14,8 +14,7 @@ RUN apk add --update \
     ruby \
     ruby-bundler \
     ruby-dev \
-    ruby-io-console \
- && rm -rf /var/cache/apk/*
+    ruby-io-console
 
 RUN gem install nokogiri --version 1.6.7.2 --no-rdoc --no-ri -- --use-system-libraries
 
