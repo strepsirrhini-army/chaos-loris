@@ -8,6 +8,9 @@ The only interface to Chaos Loris today is via a REST-ful interface.  This inter
 ### Java, Maven
 The application is written in Java 8 and packaged as a self executable JAR file. This enables it to run anywhere that Java is available.
 
+### Ruby, bundler
+In order to build the project you'll need to install Ruby and `bundler` gem. Chaos-loris uses them to render docs on a build stage. Run `gem install bundler` to get `bundler` gem.
+
 ## Configuration
 Since the application is designed to work in a cloud-native environment, all configuration is done with environment variables.
 

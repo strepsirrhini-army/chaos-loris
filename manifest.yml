@@ -5,3 +5,8 @@ applications:
   instances: 1
   path: target/chaos-loris.jar
   buildpack: https://github.com/cloudfoundry/java-buildpack.git
+  env:
+    LORIS_CLOUDFOUNDRY_HOST: REPLACE_ME
+    LORIS_CLOUDFOUNDRY_PASSWORD: REPLACE_ME
+    LORIS_CLOUDFOUNDRY_SKIPSSLVALIDATION: false
+    LORIS_CLOUDFOUNDRY_USERNAME: REPLACE_ME
